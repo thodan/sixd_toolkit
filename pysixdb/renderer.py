@@ -4,9 +4,11 @@
 # Renders rgb/depth image of a 3D mesh model.
 
 import numpy as np
+import scipy.misc
 from glumpy import app, gloo, gl
 
 # Set backend (http://glumpy.readthedocs.io/en/latest/api/app-backends.html)
+app.use('glfw')
 # app.use('pyglet')
 # app.use('freeglut')
 
@@ -19,27 +21,31 @@ log.setLevel(logging.WARNING) # ERROR, WARNING, DEBUG, INFO
 #-------------------------------------------------------------------------------
 _color_vertex_code = """
 uniform mat4 u_mv;
+uniform mat4 u_nm;
 uniform mat4 u_mvp;
 uniform vec3 u_light_eye_pos;
 
 attribute vec3 a_position;
+attribute vec3 a_normal;
 attribute vec3 a_color;
 
 varying vec3 v_color;
 varying vec3 v_eye_pos;
 varying vec3 v_L;
+varying vec3 v_normal;
 
 void main() {
     gl_Position = u_mvp * vec4(a_position, 1.0);
     v_color = a_color;
-    v_eye_pos = (u_mv * vec4(a_position, 1.0)).xyz; // Vertex position in eye coordinates
+    v_eye_pos = (u_mv * vec4(a_position, 1.0)).xyz; // Vertex position in eye coords.
     v_L = normalize(u_light_eye_pos - v_eye_pos); // Vector to the light
+    v_normal = normalize(u_nm * vec4(a_normal, 1.0)).xyz; // Normal in eye coords.
 }
 """
 
-# Color fragment shader
+# Color fragment shader - flat shading
 #-------------------------------------------------------------------------------
-_color_fragment_code = """
+_color_fragment_flat_code = """
 uniform float u_light_ambient_w;
 
 varying vec3 v_color;
@@ -47,10 +53,28 @@ varying vec3 v_eye_pos;
 varying vec3 v_L;
 
 void main() {
-    // Face normal in eye coordinates
+    // Face normal in eye coords.
     vec3 face_normal = normalize(cross(dFdx(v_eye_pos), dFdy(v_eye_pos)));
 
     float light_diffuse_w = max(dot(normalize(v_L), normalize(face_normal)), 0.0);
+    float light_w = u_light_ambient_w + light_diffuse_w;
+    if(light_w > 1.0) light_w = 1.0;
+    gl_FragColor = vec4(light_w * v_color, 1.0);
+}
+"""
+
+# Color fragment shader - Phong shading
+#-------------------------------------------------------------------------------
+_color_fragment_phong_code = """
+uniform float u_light_ambient_w;
+
+varying vec3 v_color;
+varying vec3 v_eye_pos;
+varying vec3 v_L;
+varying vec3 v_normal;
+
+void main() {
+    float light_diffuse_w = max(dot(normalize(v_L), normalize(v_normal)), 0.0);
     float light_w = u_light_ambient_w + light_diffuse_w;
     if(light_w > 1.0) light_w = 1.0;
     gl_FragColor = vec4(light_w * v_color, 1.0);
@@ -80,7 +104,7 @@ varying float v_eye_depth;
 
 void main() {
     gl_Position = u_mvp * vec4(a_position, 1.0);
-    vec3 v_eye_pos = (u_mv * vec4(a_position, 1.0)).xyz; // Vertex position in eye coordinates
+    vec3 v_eye_pos = (u_mv * vec4(a_position, 1.0)).xyz; // Vertex position in eye coords.
 
     // OpenGL Z axis goes out of the screen, so depths are negative
     v_eye_depth = -v_eye_pos.z;
@@ -157,14 +181,20 @@ def _compute_calib_proj(K, x0, y0, w, h, nc, fc, window_coords='y_down'):
 
 #-------------------------------------------------------------------------------
 def draw_color(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj,
-               ambient_weight, bg_color):
+               ambient_weight, bg_color, shading):
 
-    program = gloo.Program(_color_vertex_code, _color_fragment_code)
+    # Set shader for the selected shading
+    if shading == 'flat':
+        color_fragment_code = _color_fragment_flat_code
+    else: # 'phong'
+        color_fragment_code = _color_fragment_phong_code
+
+    program = gloo.Program(_color_vertex_code, color_fragment_code)
     program.bind(vertex_buffer)
     program['u_light_eye_pos'] = [0, 0, 0]
     program['u_light_ambient_w'] = ambient_weight
     program['u_mv'] = _compute_model_view(mat_model, mat_view)
-    # program['u_nm'] = compute_normal_matrix(model, view)
+    program['u_nm'] = _compute_normal_matrix(mat_model, mat_view)
     program['u_mvp'] = _compute_model_view_proj(mat_model, mat_view, mat_proj)
 
     # Frame buffer object
@@ -175,11 +205,23 @@ def draw_color(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj
 
     # OpenGL setup
     gl.glEnable(gl.GL_DEPTH_TEST)
-    gl.glEnable(gl.GL_CULL_FACE)
-    gl.glCullFace(gl.GL_BACK) # Back-facing polygons will be culled
     gl.glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3])
     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
     gl.glViewport(0, 0, shape[1], shape[0])
+
+    # gl.glEnable(gl.GL_BLEND)
+    # gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+    # gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
+    # gl.glHint(gl.GL_POLYGON_SMOOTH_HINT, gl.GL_NICEST)
+    # gl.glDisable(gl.GL_LINE_SMOOTH)
+    # gl.glDisable(gl.GL_POLYGON_SMOOTH)
+    # gl.glEnable(gl.GL_MULTISAMPLE)
+
+    # Keep the back-face culling disabled because of objects which do not have
+    # well-defined surface (e.g. the lamp from the dataset of Hinterstoisser)
+    gl.glDisable(gl.GL_CULL_FACE)
+    # gl.glEnable(gl.GL_CULL_FACE)
+    # gl.glCullFace(gl.GL_BACK) # Back-facing polygons will be culled
 
     # Rendering
     program.draw(gl.GL_TRIANGLES, index_buffer)
@@ -208,12 +250,17 @@ def draw_depth(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj
     fbo = gloo.FrameBuffer(color=color_buf, depth=depth_buf)
     fbo.activate()
 
+    # OpenGL setup
     gl.glEnable(gl.GL_DEPTH_TEST)
-    gl.glEnable(gl.GL_CULL_FACE)
-    gl.glCullFace(gl.GL_BACK) # Back-facing polygons will be culled
     gl.glClearColor(0.0, 0.0, 0.0, 0.0)
     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
     gl.glViewport(0, 0, shape[1], shape[0])
+
+    # Keep the back-face culling disabled because of objects which do not have
+    # well-defined surface (e.g. the lamp from the dataset of Hinterstoisser)
+    gl.glDisable(gl.GL_CULL_FACE)
+    # gl.glEnable(gl.GL_CULL_FACE)
+    # gl.glCullFace(gl.GL_BACK) # Back-facing polygons will be culled
 
     # Rendering
     program.draw(gl.GL_TRIANGLES, index_buffer)
@@ -232,7 +279,7 @@ def draw_depth(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj
 #-------------------------------------------------------------------------------
 def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
            surf_color=None, bg_color=(0.0, 0.0, 0.0, 0.0),
-           ambient_weight=0.1, mode='rgb+depth'):
+           ambient_weight=0.1, shading='flat', mode='rgb+depth'):
 
     # Process input data
     #---------------------------------------------------------------------------
@@ -250,10 +297,16 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
             colors = np.ones((model['pts'].shape[0], 3), np.float32) * 0.5
     else:
         colors = np.tile(list(surf_color) + [1.0], [model['pts'].shape[0], 1])
-    vertices_type = [('a_position', np.float32, 3),
-                     #('a_normal', np.float32, 3),
-                     ('a_color', np.float32, colors.shape[1])]
-    vertices = np.array(zip(model['pts'], colors), vertices_type)
+
+    if shading == 'flat':
+        vertices_type = [('a_position', np.float32, 3),
+                         ('a_color', np.float32, colors.shape[1])]
+        vertices = np.array(zip(model['pts'], colors), vertices_type)
+    else: # 'phong'
+        vertices_type = [('a_position', np.float32, 3),
+                         ('a_normal', np.float32, 3),
+                         ('a_color', np.float32, colors.shape[1])]
+        vertices = np.array(zip(model['pts'], model['normals'], colors), vertices_type)
 
     # Rendering
     #---------------------------------------------------------------------------
@@ -279,6 +332,13 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
     vertex_buffer = vertices.view(gloo.VertexBuffer)
     index_buffer = model['faces'].flatten().astype(np.uint32).view(gloo.IndexBuffer)
 
+    # Create window
+    # config = app.configuration.Configuration()
+    # Number of samples used around the current pixel for multisample
+    # anti-aliasing (max is 8)
+    # config.samples = 8
+    # config.profile = "core"
+    # window = app.Window(config=config, visible=False)
     window = app.Window(visible=False)
 
     global rgb, depth
@@ -293,7 +353,7 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
             # Render color image
             global rgb
             rgb = draw_color(shape, vertex_buffer, index_buffer, mat_model,
-                             mat_view, mat_proj, ambient_weight, bg_color)
+                             mat_view, mat_proj, ambient_weight, bg_color, shading)
         if render_depth:
             # Render depth image
             global depth

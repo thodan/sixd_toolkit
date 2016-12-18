@@ -6,6 +6,7 @@
 import math
 import numpy as np
 import transform
+import inout
 
 def fibonacci_sampling(n_pts, radius=1):
     '''
@@ -65,7 +66,8 @@ def hinter_sampling(min_n_pts, radius=1):
 
     :param min_n_pts: Minimum required number of points on the whole view sphere.
     :param radius: Radius of the view sphere.
-    :return: List of 3D points on the sphere surface.
+    :return: 3D points on the sphere surface and a list that indicates on which
+             refinement level the points were created.
     '''
 
     # Get vertices and faces of icosahedron
@@ -77,7 +79,12 @@ def hinter_sampling(min_n_pts, radius=1):
              (3, 2, 6), (3, 6, 8), (3, 8, 9), (4, 9, 5), (2, 4, 11), (6, 2, 10),
              (8, 6, 7), (9, 8, 1)]
 
+    # Refinement level on which the points were created
+    pts_level = [0 for _ in range(len(pts))]
+
+    ref_level = 0
     while len(pts) < min_n_pts:
+        ref_level += 1
         edge_pt_map = {} # Mapping from an edge to a newly added point on that edge
         faces_new = [] # New set of faces
 
@@ -96,6 +103,7 @@ def hinter_sampling(min_n_pts, radius=1):
 
                     pt_new = 0.5 * (np.array(pts[edge[0]]) + np.array(pts[edge[1]]))
                     pts.append(pt_new.tolist())
+                    pts_level.append(ref_level)
                 else:
                     pt_inds.append(edge_pt_map[edge])
 
@@ -142,36 +150,40 @@ def hinter_sampling(min_n_pts, radius=1):
 
     # Re-order the points and faces
     pts = pts[np.array(pts_ordered), :]
+    pts_level = [pts_level[i] for i in pts_ordered]
     pts_order = np.zeros((pts.shape[0],))
     pts_order[np.array(pts_ordered)] = np.arange(pts.shape[0])
     for face_id in range(len(faces)):
         faces[face_id] = [pts_order[i] for i in faces[face_id]]
 
-    import inout
-    inout.save_ply('output/hinter_sampling.ply', pts=pts, faces=np.array(faces))
+    # import inout
+    # inout.save_ply('output/hinter_sampling.ply', pts=pts, faces=np.array(faces))
 
-    return pts
+    return pts, pts_level
 
-def sample_views(min_n_views, radius=1, halfsphere=False):
+def sample_views(min_n_views, radius=1, hemisphere=False):
     '''
     Viewpoint sampling from a view sphere.
 
     :param min_n_views: Minimum required number of views on the whole view sphere.
     :param radius: Radius of the view sphere.
-    :param halfsphere: Indicates whether to return views only from the top
+    :param hemisphere: Indicates whether to return views only from the top
                        hemisphere or from the whole sphere.
     :return: List of views, each represented by a 3x3 rotation matrix and
              a 3x1 translation vector.
     '''
 
-    # Get points on a unit sphere represented by lan-lon angles
-    # pts = fibonacci_sampling(min_n_views + 1, radius=radius)
-    pts = hinter_sampling(min_n_views, radius=radius)
+    # Get points on a sphere
+    if True:
+        pts, pts_level = hinter_sampling(min_n_views, radius=radius)
+    else:
+        pts = fibonacci_sampling(min_n_views + 1, radius=radius)
+        pts_level = [0 for _ in range(len(pts))]
 
     views = []
     for pt in pts:
-        # if halfsphere and (pt[2] < 0 or pt[0] < 0 or pt[1] < 0):
-        if halfsphere and pt[2] < 0:
+        # if hemisphere and (pt[2] < 0 or pt[0] < 0 or pt[1] < 0):
+        if hemisphere and pt[2] < 0:
             continue
 
         # Rotation matrix
@@ -200,7 +212,50 @@ def sample_views(min_n_views, radius=1, halfsphere=False):
 
         views.append({'R': R, 't': t})
 
-    return views
+    return views, pts_level
+
+def save_vis(path, views, views_level=None):
+    '''
+    Creates a PLY file visualizing the views.
+
+    :param path: Path to output PLY file.
+    :param views: Views as returned by sample_views().
+    :param views_level: View levels as returned by sample_views().
+    :return: -
+    '''
+    # Visualization (saved as a PLY file)
+    pts = []
+    normals = []
+    colors = []
+    for view_id, view in enumerate(views):
+        R_inv = np.linalg.inv(view['R'])
+        pts += [R_inv.dot(-view['t']).squeeze(),
+                # R_inv.dot(np.array([[0.01, 0, 0]]).T - view['t']).squeeze(),
+                # R_inv.dot(np.array([[0, 0.01, 0]]).T - view['t']).squeeze(),
+                # R_inv.dot(np.array([[0, 0, 0.01]]).T - view['t']).squeeze()
+                ]
+
+        normal = R_inv.dot(np.array([0, 0, 1]).reshape((3, 1)))
+        normals += [normal.squeeze(),
+                    # np.array([0, 0, 0]),
+                    # np.array([0, 0, 0]),
+                    # np.array([0, 0, 0])
+                    ]
+
+        if views_level:
+            intens = (255 * views_level[view_id]) / float(max(views_level))
+        else:
+            intens = 255 * view_id / float(len(views))
+        colors += [[intens, intens, intens],
+                   # [255, 0, 0],
+                   # [0, 255, 0],
+                   # [0, 0, 255]
+                   ]
+
+    inout.save_ply(path,
+                   pts=np.array(pts),
+                   pts_normals=np.array(normals),
+                   pts_colors=np.array(colors))
 
 
 # Unfinished implementation of sphere sampling used by TUD:

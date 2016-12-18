@@ -1,9 +1,53 @@
 # Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
 # Center for Machine Perception, Czech Technical University in Prague
 
-import numpy as np
 import struct
+import itertools
+import numpy as np
+import scipy.misc
+import yaml
+import png
 
+def load_cam_params(path):
+    with open(path, 'r') as f:
+        c = yaml.load(f)
+    cam = {
+        'im_size': (c['width'], c['height']),
+        'K': np.array([[c['fx'], 0.0, c['cx']],
+                       [0.0, c['fy'], c['cy']],
+                       [0.0, 0.0, 1.0]])
+    }
+    return cam
+
+def read_im(path):
+    im = scipy.misc.imread(path)
+
+    # Using PyPNG
+    # r = png.Reader(filename=path)
+    # im = np.vstack(itertools.imap(np.uint8, r.asDirect()[2]))
+
+    return im
+
+def write_im(path, im):
+    scipy.misc.imsave(path, im)
+
+    # Using PyPNG (for RGB)
+    # w_rgb = png.Writer(im.shape[1], im.shape[0], greyscale=False, bitdepth=8)
+    # with open(path, 'wb') as f:
+    #     w_rgb.write(f, np.reshape(im, (-1, 3 * im.shape[1])))
+
+def read_depth(path):
+    # PyPNG library is used since it allows to save 16-bit PNG
+    r = png.Reader(filename=path)
+    im = np.vstack(itertools.imap(np.uint16, r.asDirect()[2])).astype(np.float32)
+    return im
+
+def write_depth(path, im):
+    # PyPNG library is used since it allows to save 16-bit PNG
+    w_depth = png.Writer(im.shape[1], im.shape[0], greyscale=True, bitdepth=16)
+    im_uint16 = np.round(im).astype(np.uint16)
+    with open(path, 'wb') as f:
+        w_depth.write(f, np.reshape(im_uint16, (-1, im.shape[1])))
 
 def load_ply(path):
     """
@@ -117,8 +161,8 @@ def load_ply(path):
                 val = struct.unpack(format[0], f.read(format[1]))[0]
                 if prop[0] == 'n_corners':
                     if val != face_n_corners:
-                        print 'Error: Only triangular faces are supported.'
-                        print 'Number of face corners:', val
+                        print('Error: Only triangular faces are supported.')
+                        print('Number of face corners: ' + str(val))
                         exit(-1)
                 else:
                     prop_vals[prop[0]] = val
@@ -127,8 +171,8 @@ def load_ply(path):
             for prop_id, prop in enumerate(face_props):
                 if prop[0] == 'n_corners':
                     if int(elems[prop_id]) != face_n_corners:
-                        print 'Error: Only triangular faces are supported.'
-                        print 'Number of face corners:', int(elems[prop_id])
+                        print('Error: Only triangular faces are supported.')
+                        print('Number of face corners: ' + str(int(elems[prop_id])))
                         exit(-1)
                 else:
                     prop_vals[prop[0]] = elems[prop_id]
