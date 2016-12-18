@@ -73,7 +73,7 @@ of the model coordinate system. The Z coordinate is pointing up (when the
 object is seen standing "naturally up-right").
 
 The camera coordinate system is as in OpenCV:
-http://docs.opencv.org/2.4/modules/calib3d/doc/camera\_calibration\_and\_3d\_reconstruction.html
+http://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
 
 
 ## Units
