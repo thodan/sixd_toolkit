@@ -1,6 +1,6 @@
 ### 6DB Toolkit
 
-Python scripts to facilitate work with "6DB: The 6D Object Pose Estimation Benchmark".
+Python scripts to facilitate work with 6DB.
 
 - **conversion** - Scripts that were used to convert the datasets from the original format to the 6DB standard format.
 - **doc** - Documentation, conventions, etc.

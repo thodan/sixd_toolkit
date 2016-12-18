@@ -1,4 +1,4 @@
-# 6DB STANDARD DATASET FORMAT
+# 6DB standard dataset format
 
 ## Directory structure
 
