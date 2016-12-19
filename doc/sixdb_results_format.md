@@ -1,4 +1,4 @@
-## Format of file with estimated 6D object poses
+# Format of a file with estimated 6D object poses
 
 For each test image with id=XXXX, the evaluated method is supposed to store
 its results into file "XXXX.est" with the following format:
