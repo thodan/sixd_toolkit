@@ -8,7 +8,7 @@ The first line contains a single float number representing the detection time
 
 det\_time
 
-Each of the the other lines has this format:
+Each of the other lines has this format:
 
 object\_id score r11 r12 r13 r21 r22 r23 r31 r32 r33 t1 t2 t3
 
