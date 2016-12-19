@@ -5,14 +5,16 @@
 # dataset was removed, because Brachmann et al. do not provide the extended
 # ground truth poses for it.
 
+import os
+import sys
 import glob
 import math
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 
+sys.path.append(os.path.abspath('..'))
 from pysixdb import inout, misc, transform, renderer
 from params import par_hinterstoisser as par
 import hinter_flip

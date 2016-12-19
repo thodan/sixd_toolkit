@@ -1,10 +1,12 @@
 # Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
 # Center for Machine Perception, Czech Technical University in Prague
 
+import os
+import sys
 import math
-
 import yaml
 
+sys.path.append(os.path.abspath('..'))
 from pysixdb import inout, transform
 import hinter_flip
 

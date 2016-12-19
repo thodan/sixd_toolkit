@@ -4,10 +4,13 @@
 # Calculates distances of objects from camera in test images of the selected
 # dataset.
 
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 
+sys.path.append(os.path.abspath('..'))
 from params import par_hinterstoisser as par
 
 scene_ids = range(1, par.scene_count + 1)

@@ -4,9 +4,12 @@
 # Renders RGB-D images of an object model from a "uniformly" sampled view sphere.
 
 import os
+import sys
 import yaml
 import numpy as np
 import cv2
+
+sys.path.append(os.path.abspath('..'))
 from pysixdb import view_sampler, inout, misc, renderer
 from params import par_hinterstoisser as par
 

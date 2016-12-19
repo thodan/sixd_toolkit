@@ -4,10 +4,12 @@
 # Visualizes the object models at the ground truth poses.
 
 import os
+import sys
 import numpy as np
 import yaml
-from pysixdb import inout, misc, renderer
 
+sys.path.append(os.path.abspath('..'))
+from pysixdb import inout, misc, renderer
 from params import par_hinterstoisser as par
 
 # Path mask for output images

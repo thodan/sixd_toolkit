@@ -1,15 +1,17 @@
 # Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
 # Center for Machine Perception, Czech Technical University in Prague
 
+import os
+import sys
 import glob
 import math
-import os
 import struct
 
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 
+sys.path.append(os.path.abspath('..'))
 from pysixdb import inout, misc, transform, renderer
 from params import par_hinterstoisser as par
 import hinter_flip

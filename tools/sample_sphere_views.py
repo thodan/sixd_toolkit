@@ -4,6 +4,9 @@
 # Example of sampling views from a view sphere.
 
 import os
+import sys
+
+sys.path.append(os.path.abspath('..'))
 from pysixdb import view_sampler, misc
 
 min_n_views = 642

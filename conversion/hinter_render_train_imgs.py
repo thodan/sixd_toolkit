@@ -2,13 +2,14 @@
 # Center for Machine Perception, Czech Technical University in Prague
 
 import os
-
+import sys
 import cv2
 import numpy as np
 import yaml
 
-from params import par_hinterstoisser as par
+sys.path.append(os.path.abspath('..'))
 from pysixdb import view_sampler, inout, misc, renderer
+from params import par_hinterstoisser as par
 
 obj_ids = range(1, 16)
 # obj_ids = range(14, 16)
@@ -94,7 +95,7 @@ for obj_id in obj_ids:
                 'cam_t_m2c': view['t'].flatten().tolist(),
                 'obj_bb': [int(x) for x in obj_bb],
                 'view_level': int(views_level[view_id]),
-                'sphere_radius': float(radius)
+                # 'sphere_radius': float(radius)
             }
 
             im_id += 1

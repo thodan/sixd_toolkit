@@ -279,7 +279,7 @@ def draw_depth(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj
 #-------------------------------------------------------------------------------
 def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
            surf_color=None, bg_color=(0.0, 0.0, 0.0, 0.0),
-           ambient_weight=0.1, shading='flat', mode='rgb+depth'):
+           ambient_weight=0.5, shading='flat', mode='rgb+depth'):
 
     # Process input data
     #---------------------------------------------------------------------------
