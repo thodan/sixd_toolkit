@@ -2,8 +2,9 @@
 
 ## Problem: 6D localization of a single instance of a single object
 
-For a test image XXXX and an object YY, the results of an evaluated method are
-expected to be stored in file XXXX_YY.txt in the following format:
+For a test image with id=XXXX and an object with id=YY, the results of an
+evaluated method are expected to be stored in file XXXX_YY.txt in the following
+format:
 
 The first line contains a single number (float) representing the run time
 (in seconds, -1 if not available):
