@@ -23,7 +23,7 @@ depth_in_mpath = base_path + 'orig/test/scene_{:02d}/depth{}.dpt'
 rot_mpath = base_path + 'orig/test/scene_{:02d}/rot{}.rot' # File with GT rotation
 tra_mpath = base_path + 'orig/test/scene_{:02d}/tra{}.tra' # File with GT translation
 model_mpath = base_path + 'models/obj_{:02d}.ply' # Already transformed
-bbox_cens_path = 'output/hinter_bbox_cens.yml'
+bbox_cens_path = 'output/bbox_cens.yml'
 
 scene_info_mpath = base_path + 'test/scene_{:02d}/scene_info.yml'
 scene_gt_mpath = base_path + 'test/scene_{:02d}/scene_gt.yml'
@@ -79,7 +79,7 @@ for scene_id in scene_ids:
     im_ids = sorted([int(e.split('color')[1].split('.jpg')[0]) for e in color_fpaths])
 
     # Load object model
-    obj_id = scene_id  # The object id is the same as scene id here
+    obj_id = scene_id  # The object id is the same as scene id for this dataset
     model = inout.load_ply(model_mpath.format(obj_id))
 
     # Transformation which was applied to the object models (its inverse will
@@ -115,16 +115,16 @@ for scene_id in scene_ids:
         t_m2c = load_hinter_mat(tra_mpath.format(scene_id, im_id))
         t_m2c *= 10 # Convert to [mm]
 
-        # Transfom the GT pose (to compansate transformation of the models)
+        # Transfom the GT pose (to compensate transformation of the models)
         R_m2c = R_m2c.dot(R_model_inv)
         t_m2c = t_m2c + R_m2c.dot(R_model.dot(t_model))
 
         # Get 2D bounding box of the object model at the ground truth pose
-        obj_bb = misc.calc_pose_2d_bbox(model, par.cam.im_size, par.cam.K, R_m2c, t_m2c)
+        obj_bb = misc.calc_pose_2d_bbox(model, par.cam['im_size'], par.cam['K'], R_m2c, t_m2c)
 
         # Visualisation
         if False:
-            ren_rgb = renderer.render(model, par.cam.im_size, par.cam.K, R_m2c, t_m2c, mode='rgb')
+            ren_rgb = renderer.render(model, par.cam['im_size'], par.cam['K'], R_m2c, t_m2c, mode='rgb')
             vis_rgb = 0.4 * rgb.astype(np.float32) + 0.6 * ren_rgb.astype(np.float32)
             vis_rgb = vis_rgb.astype(np.uint8)
             vis_rgb = misc.draw_rect(vis_rgb, obj_bb)
@@ -141,7 +141,7 @@ for scene_id in scene_ids:
         ]
 
         scene_info[im_id] = {
-            'cam_K': par.cam.K.flatten().tolist()
+            'cam_K': par.cam['K'].flatten().tolist()
         }
 
     def float_representer(dumper, value):

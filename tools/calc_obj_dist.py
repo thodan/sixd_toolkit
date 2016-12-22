@@ -12,6 +12,7 @@ import yaml
 
 sys.path.append(os.path.abspath('..'))
 from params import par_hinterstoisser as par
+# from params import par_tejani as par
 
 scene_ids = range(1, par.scene_count + 1)
 obj_dists = []
@@ -29,3 +30,4 @@ print('Min obj distance: ' + str(min(obj_dists)))
 print('Max obj distance: ' + str(max(obj_dists)))
 
 plt.hist(obj_dists, bins=100)
+plt.show()

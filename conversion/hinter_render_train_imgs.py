@@ -60,7 +60,7 @@ for obj_id in obj_ids:
         views, views_level = view_sampler.sample_views(min_n_views, radius,
                                                        halfsphere)
         print('Sampled views: ' + str(len(views)))
-        view_sampler.save_vis('output/views_hinter_radius=' + str(radius) + '.ply',
+        view_sampler.save_vis('../output/views_hinter_radius=' + str(radius) + '.ply',
                               views, views_level)
 
         # Render the object model from all the views

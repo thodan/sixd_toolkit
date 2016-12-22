@@ -11,27 +11,33 @@ import yaml
 sys.path.append(os.path.abspath('..'))
 from pysixdb import inout, misc, renderer
 from params import par_hinterstoisser as par
+# from params import par_tejani as par
 
 # Path mask for output images
-vis_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.png'
+vis_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.jpg'
 
 misc.ensure_dir(os.path.dirname(vis_mpath.format(0, 0)))
 
-scene_ids = range(1, 16)
-scene_im_ids = range(0, 1000, 100)
+scene_ids = range(1, par.obj_count + 1)
+scene_im_ids_step = 1
 
 for scene_id in scene_ids:
-    # Load object model
-    obj_id = scene_id  # The object id is the same as scene id here
-    model = inout.load_ply(par.model_mpath.format(obj_id))
-
     # Load scene info and gt poses
     with open(par.scene_info_mpath.format(scene_id), 'r') as f:
         scene_info = yaml.load(f, Loader=yaml.CLoader)
     with open(par.scene_gt_mpath.format(scene_id), 'r') as f:
         scene_gt = yaml.load(f, Loader=yaml.CLoader)
 
-    for im_id in scene_im_ids:
+    # Load models of objects that appear in the current scene
+    obj_ids = set([gt['obj_id'] for gts in scene_gt.values() for gt in gts])
+    models = {}
+    for obj_id in obj_ids:
+        models[obj_id] = inout.load_ply(par.model_mpath.format(obj_id))
+
+    for im_id in sorted(scene_info.keys()):
+        if im_id % scene_im_ids_step != 0:
+            continue
+
         print('scene,view: ' + str(scene_id) + ',' + str(im_id))
 
         # Load the images
@@ -40,7 +46,8 @@ for scene_id in scene_ids:
 
         vis_rgb = np.zeros(rgb.shape, np.float32)
         for gt in scene_gt[im_id]:
-            ren_rgb = renderer.render(model, par.cam['im_size'], par.cam['K'],
+            ren_rgb = renderer.render(models[gt['obj_id']], par.cam['im_size'],
+                                      par.cam['K'],
                                       np.array(gt['cam_R_m2c']).reshape((3, 3)),
                                       np.array(gt['cam_t_m2c']).reshape((3, 1)),
                                       mode='rgb')
