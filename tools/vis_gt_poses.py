@@ -6,27 +6,46 @@
 import os
 import sys
 import numpy as np
-import yaml
+import matplotlib.pyplot as plt
 
 sys.path.append(os.path.abspath('..'))
 from pysixdb import inout, misc, renderer
-from params import par_hinterstoisser as par
+
+# Dataset parameters
+# from params import par_hinterstoisser as par
 # from params import par_tejani as par
+from params import par_doumanoglou as par
 
-# Path mask for output images
-vis_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.jpg'
+# Select IDs of scenes, images and GT poses to be processed.
+# Empty list [] means that all IDs will be used.
+scene_ids = []
+im_ids = []
+gt_ids = []
 
-misc.ensure_dir(os.path.dirname(vis_mpath.format(0, 0)))
+# Indicates whether to render RGB image
+vis_rgb = True
 
-scene_ids = range(1, par.obj_count + 1)
-scene_im_ids_step = 1
+# Indicates whether to resolve visibility in the rendered RGB image (using
+# depth renderings). If True, only the part of object surface, which is not
+# occluded by any other modeled object, is visible. If False, RGB renderings
+# of individual objects are blended together.
+vis_rgb_resolve_visib = True
 
-for scene_id in scene_ids:
+# Indicates whether to render depth image
+vis_depth = True
+
+# Path masks for output images
+vis_rgb_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.jpg'
+vis_depth_mpath = '../output/vis_gt_poses/{:02d}_{:04d}_depth_diff.jpg'
+misc.ensure_dir(os.path.dirname(vis_rgb_mpath))
+
+scene_ids_curr = range(1, par.scene_count + 1)
+if scene_ids:
+    scene_ids_curr = set(scene_ids_curr).intersection(scene_ids)
+for scene_id in scene_ids_curr:
     # Load scene info and gt poses
-    with open(par.scene_info_mpath.format(scene_id), 'r') as f:
-        scene_info = yaml.load(f, Loader=yaml.CLoader)
-    with open(par.scene_gt_mpath.format(scene_id), 'r') as f:
-        scene_gt = yaml.load(f, Loader=yaml.CLoader)
+    scene_info = inout.load_scene_info(par.scene_info_mpath.format(scene_id))
+    scene_gt = inout.load_scene_gt(par.scene_gt_mpath.format(scene_id))
 
     # Load models of objects that appear in the current scene
     obj_ids = set([gt['obj_id'] for gts in scene_gt.values() for gt in gts])
@@ -34,27 +53,73 @@ for scene_id in scene_ids:
     for obj_id in obj_ids:
         models[obj_id] = inout.load_ply(par.model_mpath.format(obj_id))
 
-    for im_id in sorted(scene_info.keys()):
-        if im_id % scene_im_ids_step != 0:
-            continue
-
-        print('scene,view: ' + str(scene_id) + ',' + str(im_id))
+    # Visualize GT poses in the selected images
+    im_ids_curr = sorted(scene_info.keys())
+    if im_ids:
+        im_ids_curr = set(im_ids_curr).intersection(im_ids)
+    for im_id in im_ids_curr:
+        print('scene: {}, im: {}'.format(scene_id, im_id))
 
         # Load the images
         rgb = inout.read_im(par.test_rgb_mpath.format(scene_id, im_id))
-        #depth = inout.read_depth(depth_mpath.format(scene_id, im_id)) # [100um]
+        depth = inout.read_depth(par.test_depth_mpath.format(scene_id, im_id))
+        depth = depth.astype(np.float) * 0.1 # [mm]
 
-        vis_rgb = np.zeros(rgb.shape, np.float32)
-        for gt in scene_gt[im_id]:
-            ren_rgb = renderer.render(models[gt['obj_id']], par.cam['im_size'],
-                                      par.cam['K'],
-                                      np.array(gt['cam_R_m2c']).reshape((3, 3)),
-                                      np.array(gt['cam_t_m2c']).reshape((3, 1)),
-                                      mode='rgb')
-            ren_rgb = misc.draw_rect(ren_rgb.astype(np.uint8), gt['obj_bb'])
-            vis_rgb += ren_rgb.astype(np.float32)
+        # Render the objects at the ground truth poses
+        im_size = (depth.shape[1], depth.shape[0])
+        ren_rgb = np.zeros(rgb.shape, np.float)
+        ren_depth = np.zeros(depth.shape, np.float)
 
-        vis_rgb = 0.6 * vis_rgb.astype(np.float32) + 0.4 * rgb.astype(np.float32)
-        vis_rgb[vis_rgb > 255] = 255
+        gt_ids_curr = range(len(scene_gt[im_id]))
+        if gt_ids:
+            gt_ids_curr = set(gt_ids_curr).intersection(gt_ids)
+        for gt_id in gt_ids_curr:
+            gt = scene_gt[im_id][gt_id]
 
-        inout.write_im(vis_mpath.format(scene_id, im_id), vis_rgb.astype(np.uint8))
+            model = models[gt['obj_id']]
+            K = par.cam['K']
+            R = gt['cam_R_m2c']
+            t = gt['cam_t_m2c']
+
+            # Rendering
+            if vis_rgb:
+                m_rgb, m_depth = renderer.render(model, im_size, K, R, t,
+                                                 mode='rgb+depth')
+            if vis_depth or (vis_rgb and vis_rgb_resolve_visib):
+                m_depth = renderer.render(model, im_size, K, R, t, mode='depth')
+
+                # Get mask of the surface parts that are closer than the
+                # surfaces rendered before
+                visible_mask = np.logical_or(ren_depth == 0, m_depth < ren_depth)
+                mask = np.logical_and(m_depth != 0, visible_mask)
+
+                ren_depth[mask] = m_depth[mask].astype(ren_depth.dtype)
+
+            # Combine the RGB renderings
+            if vis_rgb:
+                if vis_rgb_resolve_visib:
+                    ren_rgb[mask] = m_rgb[mask].astype(ren_rgb.dtype)
+                else:
+                    ren_rgb += m_rgb.astype(ren_rgb.dtype)
+
+        # Save RGB visualization
+        if vis_rgb:
+            vis_im_rgb = 0.4 * rgb.astype(np.float) + 0.6 * ren_rgb
+            vis_im_rgb[vis_im_rgb > 255] = 255
+            inout.write_im(vis_rgb_mpath.format(scene_id, im_id),
+                           vis_im_rgb.astype(np.uint8))
+
+        # Save image of depth differences
+        if vis_depth:
+            # Calculate the depth difference at pixels where both depth maps
+            # are valid
+            valid_mask = (depth > 0) * (ren_depth > 0)
+            depth_diff = valid_mask * (depth - ren_depth.astype(np.float))
+
+            plt.matshow(depth_diff)
+            plt.axis('off')
+            plt.title('measured - GT depth [mm]')
+            plt.colorbar()
+            plt.savefig(vis_depth_mpath.format(scene_id, im_id), pad=0,
+                        bbox_inches='tight')
+            plt.close()

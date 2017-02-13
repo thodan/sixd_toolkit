@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import yaml
 
 sys.path.append(os.path.abspath('..'))
-from params import par_hinterstoisser as par
-# from params import par_tejani as par
+# from params import par_hinterstoisser as par
+from params import par_tejani as par
 
 scene_ids = range(1, par.scene_count + 1)
 obj_dists = []

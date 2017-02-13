@@ -6,6 +6,9 @@ from pysixdb import inout
 obj_count = 6
 scene_count = 6
 
+test_im_size = (640, 480)
+
+dataset_name = 'tejani'
 base_path = '/local/datasets/tlod/imperial/tejani/'
 cam_params_path = base_path + 'camera.yml'
 

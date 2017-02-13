@@ -14,7 +14,7 @@ from params import par_tejani as par
 obj_ids = range(1, 7)
 
 min_n_views = 1000 # The final number of views depends on the sampling method
-# radii = range(500, 1101, 100) # [mm] 50 - 113 cm (calculated using calc_obj_dist.py)
+# radii = range(500, 1101, 100) # [mm] 51 - 112 cm (calculated using calc_obj_dist.py)
 radii = [500]
 halfsphere = True # Views only from the top hemisphere
 clip_near = 10 # [mm]

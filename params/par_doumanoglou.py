@@ -3,13 +3,13 @@
 
 from pysixdb import inout
 
-obj_count = 15
-scene_count = 15
+obj_count = 2
+scene_count = 3
 
 test_im_size = (640, 480)
 
-dataset_name = 'hinterstoisser'
-base_path = '/local/datasets/tlod/hinterstoisser/'
+dataset_name = 'doumanoglou'
+base_path = '/local/datasets/tlod/imperial/doumanoglou_scenario_2/'
 cam_params_path = base_path + 'camera.yml'
 
 # Path masks
