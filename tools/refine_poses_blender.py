@@ -4,7 +4,6 @@
 
 # A script to facilitate refinement of ground truth 6D object poses in Blender.
 
-
 1) Open Blender console and run:
 ----------
 import imp
@@ -135,7 +134,8 @@ def load_scene(scene_id):
     scene_info_path = par.scene_info_mpath.format(scene_id)
     print('Loading scene info: ' + scene_info_path)
     scene_info = inout.load_scene_info(scene_info_path)
-    scene_info_ref = scene_info[sorted(scene_info.keys())[ref_im_ind]]
+    ref_im_id = sorted(scene_info.keys())[ref_im_ind]
+    scene_info_ref = scene_info[ref_im_id]
     R_w2c = scene_info_ref['cam_R_w2c']
     R_w2c_inv = np.linalg.inv(R_w2c)
     t_w2c = scene_info_ref['cam_t_w2c']
@@ -144,7 +144,7 @@ def load_scene(scene_id):
     scene_gt_path = par.scene_gt_mpath.format(scene_id)
     print('Loading GT poses: ' + scene_gt_path)
     scene_gt = inout.load_scene_gt(scene_gt_path)
-    scene_gt_ref = scene_gt[sorted(scene_gt.keys())[ref_im_ind]]
+    scene_gt_ref = scene_gt[ref_im_id]
 
     # Load scene model
     #bpy.ops.import_mesh.ply(filepath=scene_model_mpath.format(scene_id))
@@ -190,7 +190,6 @@ def save_scene(scene_id):
     """
     Saves the specified scene.
     """
-    global ref_im_ind
     global scene_info
     global scene_gt
 
@@ -203,7 +202,6 @@ def save_scene(scene_id):
             R = transform.euler_matrix(e[0], e[1], e[2], axes='sxyz')[:3, :3]
             ref_obj_poses.append({
                 'obj_id': int(obj_id),
-                #'obj_bb': None
                 'cam_R_m2w': R,
                 'cam_t_m2w': np.array(t).reshape((3, 1))
             })

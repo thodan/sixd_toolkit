@@ -30,7 +30,7 @@ scenes = {1: {1: 15}, 2: {2: 5}, 3: {1: 9, 2: 4}} # IDs and counts of objects in
 # scenes = {2: {2: 5}, 3: {1: 9, 2: 4}}
 obj_names = {1: 'coffee_cup', 2: 'juice'}
 
-def load_doumanoglou_pose(path):
+def load_doumanoglou_pose(path, convert):
     '''
     Loads a pose from a text file as used by Doumanoglou.
     '''
@@ -43,10 +43,11 @@ def load_doumanoglou_pose(path):
         t = mat[:3, 3].reshape((3, 1))
 
         # Flip Y and Z axis (OpenGL -> OpenCV coordinate system)
-        yz_flip = np.eye(3, dtype=np.float32)
-        yz_flip[0, 0], yz_flip[1, 1], yz_flip[2, 2] = 1, -1, -1
-        R = yz_flip.dot(R)
-        t = yz_flip.dot(t)
+        if convert:
+            yz_flip = np.eye(3, dtype=np.float32)
+            yz_flip[0, 0], yz_flip[1, 1], yz_flip[2, 2] = 1, -1, -1
+            R = yz_flip.dot(R)
+            t = yz_flip.dot(t)
 
     return R, t
 
@@ -167,12 +168,12 @@ for scene_id in sorted(scenes.keys()):
         inout.write_depth(depth_out_mpath.format(scene_id, im_id_out), depth)
 
         # Load the camera pose
-        cam_R, cam_t = load_doumanoglou_pose(cam_pose_mpath.format(scene_id, im_id))
+        cam_R, cam_t = load_doumanoglou_pose(cam_pose_mpath.format(scene_id, im_id), False)
 
         scene_info[im_id_out] = {
             'cam_K': par.cam['K'],
             'cam_R_w2c': cam_R,
-            'cam_t_w2c': cam_t
+            'cam_t_w2c': 1000.0 * cam_t # [mm]
         }
 
         # Process the GT poses
@@ -181,13 +182,13 @@ for scene_id in sorted(scenes.keys()):
             obj_count = scenes[scene_id][obj_id]
             for i in range(obj_count):
                 R, t = load_doumanoglou_pose(obj_pose_mpath.format(
-                    scene_id, obj_names[obj_id], i + 1, im_id))
+                    scene_id, obj_names[obj_id], i + 1, im_id), True)
 
                 # The GT poses are expressed w.r.t. the models provided by
                 # Doumanoglou, but we want them to be expressed w.r.t. the model
                 # coordinate system used by Tejani.
                 R_m2c = R.dot(trans_tejani2dou[obj_id]['R'])
-                t_m2c = t * 1000.0 + R_m2c.dot(ts_model[obj_id]) +\
+                t_m2c = 1000.0 * t + R_m2c.dot(ts_model[obj_id]) +\
                         R.dot(trans_tejani2dou[obj_id]['t'])
 
                 # Get 2D bounding box of the object model at the ground truth pose
