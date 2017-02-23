@@ -315,7 +315,8 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
 
     # Set texture / color of vertices
     if texture != None:
-        texture = texture.astype(np.float32) / 255.0
+        if texture.max() > 1.0:
+            texture = texture.astype(np.float32) / 255.0
         texture = np.flipud(texture)
         texture_uv = model['texture_uv']
         colors = np.zeros((model['pts'].shape[0], 3), np.float32)
