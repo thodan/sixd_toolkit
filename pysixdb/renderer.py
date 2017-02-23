@@ -5,7 +5,7 @@
 
 import numpy as np
 import scipy.misc
-from glumpy import app, gloo, gl
+from glumpy import app, gloo, gl, data
 
 # Set backend (http://glumpy.readthedocs.io/en/latest/api/app-backends.html)
 app.use('glfw')
@@ -28,8 +28,10 @@ uniform vec3 u_light_eye_pos;
 attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec3 a_color;
+attribute vec2 a_texcoord;
 
 varying vec3 v_color;
+varying vec2 v_texcoord;
 varying vec3 v_eye_pos;
 varying vec3 v_L;
 varying vec3 v_normal;
@@ -37,6 +39,7 @@ varying vec3 v_normal;
 void main() {
     gl_Position = u_mvp * vec4(a_position, 1.0);
     v_color = a_color;
+    v_texcoord = a_texcoord;
     v_eye_pos = (u_mv * vec4(a_position, 1.0)).xyz; // Vertex position in eye coords.
     v_L = normalize(u_light_eye_pos - v_eye_pos); // Vector to the light
     v_normal = normalize(u_nm * vec4(a_normal, 1.0)).xyz; // Normal in eye coords.
@@ -47,8 +50,11 @@ void main() {
 #-------------------------------------------------------------------------------
 _color_fragment_flat_code = """
 uniform float u_light_ambient_w;
+uniform sampler2D u_texture;
+uniform bool u_use_texture;
 
 varying vec3 v_color;
+varying vec2 v_texcoord;
 varying vec3 v_eye_pos;
 varying vec3 v_L;
 
@@ -59,7 +65,13 @@ void main() {
     float light_diffuse_w = max(dot(normalize(v_L), normalize(face_normal)), 0.0);
     float light_w = u_light_ambient_w + light_diffuse_w;
     if(light_w > 1.0) light_w = 1.0;
-    gl_FragColor = vec4(light_w * v_color, 1.0);
+
+    if(bool(u_use_texture)) {
+        gl_FragColor = vec4(light_w * texture2D(u_texture, v_texcoord));
+    }
+    else {
+        gl_FragColor = vec4(light_w * v_color, 1.0);
+    }
 }
 """
 
@@ -67,8 +79,11 @@ void main() {
 #-------------------------------------------------------------------------------
 _color_fragment_phong_code = """
 uniform float u_light_ambient_w;
+uniform sampler2D u_texture;
+uniform int u_use_texture;
 
 varying vec3 v_color;
+varying vec2 v_texcoord;
 varying vec3 v_eye_pos;
 varying vec3 v_L;
 varying vec3 v_normal;
@@ -77,7 +92,13 @@ void main() {
     float light_diffuse_w = max(dot(normalize(v_L), normalize(v_normal)), 0.0);
     float light_w = u_light_ambient_w + light_diffuse_w;
     if(light_w > 1.0) light_w = 1.0;
-    gl_FragColor = vec4(light_w * v_color, 1.0);
+
+    if(bool(u_use_texture)) {
+        gl_FragColor = vec4(light_w * texture2D(u_texture, v_texcoord));
+    }
+    else {
+        gl_FragColor = vec4(light_w * v_color, 1.0);
+    }
 }
 """
 
@@ -180,8 +201,8 @@ def _compute_calib_proj(K, x0, y0, w, h, nc, fc, window_coords='y_down'):
     return proj.T
 
 #-------------------------------------------------------------------------------
-def draw_color(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj,
-               ambient_weight, bg_color, shading):
+def draw_color(shape, vertex_buffer, index_buffer, texture, mat_model, mat_view,
+               mat_proj, ambient_weight, bg_color, shading):
 
     # Set shader for the selected shading
     if shading == 'flat':
@@ -196,6 +217,12 @@ def draw_color(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj
     program['u_mv'] = _compute_model_view(mat_model, mat_view)
     program['u_nm'] = _compute_normal_matrix(mat_model, mat_view)
     program['u_mvp'] = _compute_model_view_proj(mat_model, mat_view, mat_proj)
+    if texture != None:
+        program['u_use_texture'] = int(True)
+        program['u_texture'] = texture
+    else:
+        program['u_use_texture'] = int(False)
+        program['u_texture'] = np.zeros((1, 1, 4), np.float32)
 
     # Frame buffer object
     color_buf = np.zeros((shape[0], shape[1], 4), np.float32).view(gloo.TextureFloat2D)
@@ -278,7 +305,7 @@ def draw_depth(shape, vertex_buffer, index_buffer, mat_model, mat_view, mat_proj
 
 #-------------------------------------------------------------------------------
 def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
-           surf_color=None, bg_color=(0.0, 0.0, 0.0, 0.0),
+           texture=None, surf_color=None, bg_color=(0.0, 0.0, 0.0, 0.0),
            ambient_weight=0.5, shading='flat', mode='rgb+depth'):
 
     # Process input data
@@ -286,27 +313,44 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
     # Make sure vertices and faces are provided in the model
     assert({'pts', 'faces'}.issubset(set(model.keys())))
 
-    # Set color of vertices
-    if not surf_color:
-        if 'colors' in model.keys():
-            assert(model['pts'].shape[0] == model['colors'].shape[0])
-            colors = model['colors']
-            if colors.max() > 1.0:
-                colors /= 255.0 # Color values are expected to be in range [0, 1]
-        else:
-            colors = np.ones((model['pts'].shape[0], 3), np.float32) * 0.5
+    # Set texture / color of vertices
+    if texture != None:
+        texture = texture.astype(np.float32) / 255.0
+        texture = np.flipud(texture)
+        texture_uv = model['texture_uv']
+        colors = np.zeros((model['pts'].shape[0], 3), np.float32)
     else:
-        colors = np.tile(list(surf_color) + [1.0], [model['pts'].shape[0], 1])
+        texture_uv = np.zeros((model['pts'].shape[0], 2), np.float32)
+        if not surf_color:
+            if 'colors' in model.keys():
+                assert(model['pts'].shape[0] == model['colors'].shape[0])
+                colors = model['colors']
+                if colors.max() > 1.0:
+                    colors /= 255.0 # Color values are expected in range [0, 1]
+            else:
+                colors = np.ones((model['pts'].shape[0], 3), np.float32) * 0.5
+        else:
+            colors = np.tile(list(surf_color) + [1.0], [model['pts'].shape[0], 1])
 
-    if shading == 'flat':
+    # Set the vertex data
+    if mode == 'depth':
         vertices_type = [('a_position', np.float32, 3),
                          ('a_color', np.float32, colors.shape[1])]
         vertices = np.array(zip(model['pts'], colors), vertices_type)
-    else: # 'phong'
-        vertices_type = [('a_position', np.float32, 3),
-                         ('a_normal', np.float32, 3),
-                         ('a_color', np.float32, colors.shape[1])]
-        vertices = np.array(zip(model['pts'], model['normals'], colors), vertices_type)
+    else:
+        if shading == 'flat':
+            vertices_type = [('a_position', np.float32, 3),
+                             ('a_color', np.float32, colors.shape[1]),
+                             ('a_texcoord', np.float32, 2)]
+            vertices = np.array(zip(model['pts'], colors, texture_uv),
+                                vertices_type)
+        else: # shading == 'phong'
+            vertices_type = [('a_position', np.float32, 3),
+                             ('a_normal', np.float32, 3),
+                             ('a_color', np.float32, colors.shape[1]),
+                             ('a_texcoord', np.float32, 2)]
+            vertices = np.array(zip(model['pts'], model['normals'],
+                                    colors, texture_uv), vertices_type)
 
     # Rendering
     #---------------------------------------------------------------------------
@@ -352,7 +396,7 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
         if render_rgb:
             # Render color image
             global rgb
-            rgb = draw_color(shape, vertex_buffer, index_buffer, mat_model,
+            rgb = draw_color(shape, vertex_buffer, index_buffer, texture, mat_model,
                              mat_view, mat_proj, ambient_weight, bg_color, shading)
         if render_depth:
             # Render depth image

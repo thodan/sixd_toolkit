@@ -154,10 +154,13 @@ def load_ply(path):
             pt_props.append((line.split(' ')[-1], line.split(' ')[-2]))
         elif line.startswith('property list') and header_face_section:
             elems = line.split(' ')
-            # (name of the property, data type)
-            face_props.append(('n_corners', elems[2]))
-            for i in range(face_n_corners):
-                face_props.append(('ind_' + str(i), elems[3]))
+            if elems[-1] == 'vertex_indices':
+                # (name of the property, data type)
+                face_props.append(('n_corners', elems[2]))
+                for i in range(face_n_corners):
+                    face_props.append(('ind_' + str(i), elems[3]))
+            else:
+                print('Warning: Not supported face property: ' + elems[-1])
         elif line.startswith('format'):
             if 'binary' in line:
                 is_binary = True
@@ -181,6 +184,11 @@ def load_ply(path):
         is_color = True
         model['colors'] = np.zeros((n_pts, 3), np.float)
 
+    is_texture = False
+    if {'texture_u', 'texture_v'}.issubset(set(pt_props_names)):
+        is_texture = True
+        model['texture_uv'] = np.zeros((n_pts, 2), np.float)
+
     formats = { # For binary format
         'float': ('f', 4),
         'double': ('d', 8),
@@ -191,7 +199,8 @@ def load_ply(path):
     # Load vertices
     for pt_id in range(n_pts):
         prop_vals = {}
-        load_props = ['x', 'y', 'z', 'nx', 'ny', 'nz', 'red', 'green', 'blue']
+        load_props = ['x', 'y', 'z', 'nx', 'ny', 'nz',
+                      'red', 'green', 'blue', 'texture_u', 'texture_v']
         if is_binary:
             for prop in pt_props:
                 format = formats[prop[1]]
@@ -217,6 +226,10 @@ def load_ply(path):
             model['colors'][pt_id, 0] = float(prop_vals['red'])
             model['colors'][pt_id, 1] = float(prop_vals['green'])
             model['colors'][pt_id, 2] = float(prop_vals['blue'])
+
+        if is_texture:
+            model['texture_uv'][pt_id, 0] = float(prop_vals['texture_u'])
+            model['texture_uv'][pt_id, 1] = float(prop_vals['texture_v'])
 
     # Load faces
     for face_id in range(n_faces):

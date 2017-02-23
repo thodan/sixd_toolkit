@@ -11,7 +11,8 @@ import cv2
 
 sys.path.append(os.path.abspath('..'))
 from pysixdb import view_sampler, inout, misc, renderer
-from params import par_hinterstoisser as par
+# from params import par_hinterstoisser as par
+from params import par_rutgers as par
 
 # Objects to render
 obj_ids = range(1, par.obj_count + 1)
@@ -53,6 +54,14 @@ for obj_id in obj_ids:
     model_path = par.model_mpath.format(obj_id)
     model = inout.load_ply(model_path)
 
+    # Load model texture
+    if par.model_texture_mpath:
+        model_texture_path = par.model_texture_mpath.format(obj_id)
+        model_texture = cv2.imread(model_texture_path)
+        model_texture = cv2.cvtColor(model_texture, cv2.COLOR_RGB2BGR)
+    else:
+        model_texture = None
+
     obj_info = {}
     im_id = 0
     for radius in radii:
@@ -77,8 +86,9 @@ for obj_id in obj_ids:
 
             # Render RGB image
             rgb = renderer.render(model, im_size_rgb, K_rgb, view['R'], view['t'],
-                                  clip_near, clip_far, ambient_weight=ambient_weight,
-                                  shading=shading, mode='rgb')
+                                  clip_near, clip_far, texture=model_texture,
+                                  ambient_weight=ambient_weight, shading=shading,
+                                  mode='rgb')
             rgb = cv2.resize(rgb, par.cam['im_size'], interpolation=cv2.INTER_AREA)
 
             # Save the rendered images

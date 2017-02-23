@@ -1,8 +1,8 @@
 """
-# Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
-# Center for Machine Perception, Czech Technical University in Prague
+Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
+Center for Machine Perception, Czech Technical University in Prague
 
-# A script to facilitate refinement of ground truth 6D object poses in Blender.
+A script to facilitate refinement of ground truth 6D object poses in Blender.
 
 1) Open Blender console and run:
 ----------

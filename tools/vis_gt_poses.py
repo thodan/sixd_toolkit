@@ -14,7 +14,8 @@ from pysixdb import inout, misc, renderer
 # Dataset parameters
 # from params import par_hinterstoisser as par
 # from params import par_tejani as par
-from params import par_doumanoglou as par
+# from params import par_doumanoglou as par
+from params import par_rutgers as par
 
 # Select IDs of scenes, images and GT poses to be processed.
 # Empty list [] means that all IDs will be used.
@@ -29,10 +30,10 @@ vis_rgb = True
 # depth renderings). If True, only the part of object surface, which is not
 # occluded by any other modeled object, is visible. If False, RGB renderings
 # of individual objects are blended together.
-vis_rgb_resolve_visib = True
+vis_rgb_resolve_visib = False
 
 # Indicates whether to render depth image
-vis_depth = True
+vis_depth = False
 
 # Path masks for output images
 vis_rgb_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.jpg'
@@ -63,7 +64,8 @@ for scene_id in scene_ids_curr:
         # Load the images
         rgb = inout.read_im(par.test_rgb_mpath.format(scene_id, im_id))
         depth = inout.read_depth(par.test_depth_mpath.format(scene_id, im_id))
-        depth = depth.astype(np.float) * 0.1 # [mm]
+        # depth = depth.astype(np.float) * 0.1 # [mm]
+        depth = depth.astype(np.float) # [mm]
 
         # Render the objects at the ground truth poses
         im_size = (depth.shape[1], depth.shape[0])
@@ -77,7 +79,7 @@ for scene_id in scene_ids_curr:
             gt = scene_gt[im_id][gt_id]
 
             model = models[gt['obj_id']]
-            K = par.cam['K']
+            K = scene_info[im_id]['cam_K']
             R = gt['cam_R_m2c']
             t = gt['cam_t_m2c']
 

@@ -3,18 +3,18 @@
 
 from pysixdb import inout
 
-obj_count = 15
-scene_count = 15
+obj_count = 24
+scene_count = 24
 
 test_im_size = (640, 480)
 
-dataset_name = 'hinterstoisser'
-base_path = '/local/datasets/tlod/hinterstoisser/'
+dataset_name = 'rutgers'
+base_path = '/local/datasets/tlod/rutgers/frank/'
 cam_params_path = base_path + 'camera.yml'
 
 # Path masks
 model_mpath = base_path + 'models/obj_{:02d}.ply'
-model_texture_mpath = None
+model_texture_mpath = base_path + 'models/obj_{:02d}.png'
 obj_info_mpath = base_path + 'train/obj_{:02d}/obj_info.yml'
 train_rgb_mpath = base_path + 'train/obj_{:02d}/rgb/{:04d}.png'
 train_depth_mpath = base_path + 'train/obj_{:02d}/depth/{:04d}.png'
