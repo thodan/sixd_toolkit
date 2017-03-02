@@ -51,7 +51,7 @@ void main() {
 _color_fragment_flat_code = """
 uniform float u_light_ambient_w;
 uniform sampler2D u_texture;
-uniform bool u_use_texture;
+uniform int u_use_texture;
 
 varying vec3 v_color;
 varying vec2 v_texcoord;

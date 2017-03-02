@@ -133,7 +133,7 @@ def load_scene(scene_id):
     # Load scene info
     scene_info_path = par.scene_info_mpath.format(scene_id)
     print('Loading scene info: ' + scene_info_path)
-    scene_info = inout.load_scene_info(scene_info_path)
+    scene_info = inout.load_info(scene_info_path)
     ref_im_id = sorted(scene_info.keys())[ref_im_ind]
     scene_info_ref = scene_info[ref_im_id]
     R_w2c = scene_info_ref['cam_R_w2c']
@@ -143,7 +143,7 @@ def load_scene(scene_id):
     # Load ground truth poses for the reference camera coordinate system
     scene_gt_path = par.scene_gt_mpath.format(scene_id)
     print('Loading GT poses: ' + scene_gt_path)
-    scene_gt = inout.load_scene_gt(scene_gt_path)
+    scene_gt = inout.load_gt(scene_gt_path)
     scene_gt_ref = scene_gt[ref_im_id]
 
     # Load scene model
@@ -241,4 +241,4 @@ def save_scene(scene_id):
     # Save the updated ground truth poses
     scene_gt_path = par.scene_gt_mpath.format(scene_id)
     print('Saving GT poses: ' + scene_gt_path)
-    inout.save_scene_gt(scene_gt_path, scene_gt)
+    inout.save_gt(scene_gt_path, scene_gt)

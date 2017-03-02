@@ -82,7 +82,9 @@ for obj_id in obj_ids:
             depth = renderer.render(model, par.cam['im_size'], par.cam['K'],
                                     view['R'], view['t'],
                                     clip_near, clip_far, mode='depth')
-            depth *= 10.0  # Convert depth map to [100um]
+
+            # Convert depth is in the same units as for test images
+            depth /= par.cam['depth_scale']
 
             # Render RGB image
             rgb = renderer.render(model, im_size_rgb, K_rgb, view['R'], view['t'],

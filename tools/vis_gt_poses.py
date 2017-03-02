@@ -16,6 +16,7 @@ from pysixdb import inout, misc, renderer
 # from params import par_tejani as par
 # from params import par_doumanoglou as par
 from params import par_rutgers as par
+# from params import par_tud_light as par
 
 # Select IDs of scenes, images and GT poses to be processed.
 # Empty list [] means that all IDs will be used.
@@ -45,8 +46,8 @@ if scene_ids:
     scene_ids_curr = set(scene_ids_curr).intersection(scene_ids)
 for scene_id in scene_ids_curr:
     # Load scene info and gt poses
-    scene_info = inout.load_scene_info(par.scene_info_mpath.format(scene_id))
-    scene_gt = inout.load_scene_gt(par.scene_gt_mpath.format(scene_id))
+    scene_info = inout.load_info(par.scene_info_mpath.format(scene_id))
+    scene_gt = inout.load_gt(par.scene_gt_mpath.format(scene_id))
 
     # Load models of objects that appear in the current scene
     obj_ids = set([gt['obj_id'] for gts in scene_gt.values() for gt in gts])
@@ -64,8 +65,8 @@ for scene_id in scene_ids_curr:
         # Load the images
         rgb = inout.read_im(par.test_rgb_mpath.format(scene_id, im_id))
         depth = inout.read_depth(par.test_depth_mpath.format(scene_id, im_id))
-        # depth = depth.astype(np.float) * 0.1 # [mm]
         depth = depth.astype(np.float) # [mm]
+        depth *= par.cam['depth_scale'] # to [mm]
 
         # Render the objects at the ground truth poses
         im_size = (depth.shape[1], depth.shape[0])
@@ -85,8 +86,7 @@ for scene_id in scene_ids_curr:
 
             # Rendering
             if vis_rgb:
-                m_rgb, m_depth = renderer.render(model, im_size, K, R, t,
-                                                 mode='rgb+depth')
+                m_rgb = renderer.render(model, im_size, K, R, t, mode='rgb')
             if vis_depth or (vis_rgb and vis_rgb_resolve_visib):
                 m_depth = renderer.render(model, im_size, K, R, t, mode='depth')
 

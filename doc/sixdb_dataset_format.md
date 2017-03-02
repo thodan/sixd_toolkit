@@ -4,18 +4,25 @@
 
 The dataset is organized as follows:
 
-* **models[\_MODELTYPE]/obj\_YY.ply** - 3D model of object YY.
-* **train[\_SENSORTYPE]/obj\_YY/{rgb,depth}/XXXX.png** - Training images of object YY.
-* **test[\_SENSORTYPE]/scene\_ZZ/{rgb,depth}/XXXX.png** - Test images of scene ZZ.
+* **models[\_TYPE]/YY.ply** - 3D model of object YY.
+* **models[\_TYPE]/YY.png** - Texture of 3D model of object YY.
+* **train[\_TYPE]/YY/{rgb,depth,obj,seg}/XXXX.png** - Training images of object YY.
+* **test[\_TYPE]/ZZ/{rgb,depth,mask}/XXXX.png** - Test images of scene ZZ.
+* **test[\_TYPE]/ZZ/gt.yml** - Ground truth poses for scene ZZ.
+* **test[\_TYPE]/ZZ/info.yml** - Info (e.g. camera parameters) for scene ZZ.
 
-MODELTYPE and SENSORTYPE is optional and is used if more types are available.
-XXXX is ID (a zero-padded number) of an image.
+TYPE is optional and is used if more types of data are available.
+XXXX is an image ID (a zero-padded number).
+Folder rgb contains color images, depth contains depth images, obj contains
+object coordinate images, seg contains segmentation masks of the objects, and
+mask contains binary mask images indicating the region of interest.
+Folders obj, seg and mask are not provided for all datasets.
 
 
 ## Training images
 
 The training images of each object are accompanied with file obj\_info.yml
-(located in train[\_SENSORTYPE]/obj\_YY), that contains for each image the
+(located in train[\_TYPE]/obj\_YY), that contains for each image the
 following information:
 
 * **cam\_K** - 3x3 intrinsic camera matrix K (saved row-wise)
@@ -34,7 +41,7 @@ not constant).
 ## Test images
 
 The test images from each scene are accompanied with file scene\_info.yml
-(located in test[\_SENSORTYPE]/scene\_ZZ), that contains for each image
+(located in test[\_TYPE]/scene\_ZZ), that contains for each image
 the following information:
 
 * **cam\_K** - 3x3 intrinsic camera matrix K (saved row-wise)
@@ -43,7 +50,7 @@ Note: The matrix K can be different for each image for the same reason as in the
 case of training images.
 
 The ground truth poses of the objects which are present in the scene are
-provided in file scene\_gt.yml (located in test[\_SENSORTYPE]/scene\_ZZ),
+provided in file scene\_gt.yml (located in test[\_TYPE]/scene\_ZZ),
 that contains for each image and object the following information:
 
 * **obj\_id** - Object ID

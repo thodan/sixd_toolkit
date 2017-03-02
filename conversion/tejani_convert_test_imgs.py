@@ -21,10 +21,10 @@ pose_mpath = base_path + 'orig/annotation_new_models/scene_{:02d}/poses{}.txt'
 model_mpath = base_path + 'models/obj_{:02d}.ply'
 bbox_cens_path = base_path + 'bbox_cens.yml'
 
-scene_info_mpath = base_path + 'test/scene_{:02d}/scene_info.yml'
-scene_gt_mpath = base_path + 'test/scene_{:02d}/scene_gt.yml'
-rgb_out_mpath = base_path + 'test/scene_{:02d}/rgb/{:04d}.png'
-depth_out_mpath = base_path + 'test/scene_{:02d}/depth/{:04d}.png'
+scene_info_mpath = base_path + 'test/{:02d}/info.yml'
+scene_gt_mpath = base_path + 'test/{:02d}/gt.yml'
+rgb_out_mpath = base_path + 'test/{:02d}/rgb/{:04d}.png'
+depth_out_mpath = base_path + 'test/{:02d}/depth/{:04d}.png'
 
 # scene_ids = range(1, 7)
 scene_ids = range(3, 7)

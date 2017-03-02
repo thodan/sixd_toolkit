@@ -26,9 +26,10 @@ ssaa_fact = 4 # Anti-aliasing factor (for supersampling anti-aliasing)
 base_path = '/local/datasets/tlod/imperial/tejani/'
 model_mpath = base_path + 'models/obj_{:02d}.ply'
 
-obj_info_mpath = base_path + 'train/obj_{:02d}/obj_info.yml'
-rgb_mpath = base_path + 'train/obj_{:02d}/rgb/{:04d}.png'
-depth_mpath = base_path + 'train/obj_{:02d}/depth/{:04d}.png'
+obj_info_mpath = base_path + 'train/{:02d}/info.yml'
+obj_gt_mpath = base_path + 'train/{:02d}/gt.yml'
+rgb_mpath = base_path + 'train/{:02d}/rgb/{:04d}.png'
+depth_mpath = base_path + 'train/{:02d}/depth/{:04d}.png'
 
 # Super-sampling anti-aliasing (SSAA)
 # https://github.com/vispy/vispy/wiki/Tech.-Antialiasing
@@ -47,6 +48,7 @@ for obj_id in obj_ids:
     model = inout.load_ply(model_path)
 
     obj_info = {}
+    obj_gt = {}
     im_id = 0
     for radius in radii:
         # Sample views
@@ -66,7 +68,7 @@ for obj_id in obj_ids:
             depth = renderer.render(model, par.cam['im_size'], par.cam['K'],
                                     view['R'], view['t'],
                                     clip_near, clip_far, mode='depth')
-            depth *= 10.0  # Convert depth map to [100um]
+            #depth *= 10.0  # Convert depth map to [100um]
 
             # Render RGB image
             rgb = renderer.render(model, im_size_rgb, K_rgb, view['R'], view['t'],
@@ -84,11 +86,15 @@ for obj_id in obj_ids:
 
             obj_info[im_id] = {
                 'cam_K': par.cam['K'].flatten().tolist(),
+                'view_level': int(views_level[view_id])
+                # 'sphere_radius': float(radius)
+            }
+
+            obj_gt[im_id] = {
                 'cam_R_m2c': view['R'].flatten().tolist(),
                 'cam_t_m2c': view['t'].flatten().tolist(),
                 'obj_bb': [int(x) for x in obj_bb],
-                'view_level': int(views_level[view_id]),
-                # 'sphere_radius': float(radius)
+                'obj_id': int(obj_id)
             }
 
             im_id += 1
@@ -103,3 +109,6 @@ for obj_id in obj_ids:
     # Store metadata
     with open(obj_info_mpath.format(obj_id), 'w') as f:
         yaml.dump(obj_info, f, width=10000)
+
+    with open(obj_gt_mpath.format(obj_id), 'w') as f:
+        yaml.dump(obj_gt, f, width=10000)

@@ -25,10 +25,10 @@ tra_mpath = base_path + 'orig/test/scene_{:02d}/tra{}.tra' # File with GT transl
 model_mpath = base_path + 'models/obj_{:02d}.ply' # Already transformed
 bbox_cens_path = 'output/bbox_cens.yml'
 
-scene_info_mpath = base_path + 'test/scene_{:02d}/scene_info.yml'
-scene_gt_mpath = base_path + 'test/scene_{:02d}/scene_gt.yml'
-rgb_out_mpath = base_path + 'test/scene_{:02d}/rgb/{:04d}.png'
-depth_out_mpath = base_path + 'test/scene_{:02d}/depth/{:04d}.png'
+scene_info_mpath = base_path + 'test/{:02d}/info.yml'
+scene_gt_mpath = base_path + 'test/{:02d}/gt.yml'
+rgb_out_mpath = base_path + 'test/{:02d}/rgb/{:04d}.png'
+depth_out_mpath = base_path + 'test/{:02d}/depth/{:04d}.png'
 
 scene_ids = range(1, 16)
 

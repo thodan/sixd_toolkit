@@ -4,12 +4,14 @@
 import os
 import glob
 import cPickle as pickle
+import yaml
 
 base_path = '/local/datasets/tlod/imperial/tejani/orig/tejani_filtering/'
 bad_path = base_path + 'gt_bad_annotation'
 good_path = base_path + 'gt_good_annotation'
 bad_out_path = base_path + 'bad_ids.p'
 good_out_path = base_path + 'good_ids.p'
+good_out_yaml_path = base_path + 'good_ids.yaml'
 
 bad_ids = []
 bad_fpaths = sorted(glob.glob(os.path.join(bad_path, '*.jpg')))
@@ -28,6 +30,17 @@ with open(bad_out_path, 'w') as f:
 
 with open(good_out_path, 'w') as f:
     pickle.dump(good_ids, f)
+
+# Save the good IDs into a YAML file
+good_ids_scene = {}
+for good_id in good_ids:
+    orig_im_id = good_id[1] + 1
+    if good_id[0] in good_ids_scene.keys():
+        good_ids_scene[good_id[0]].append(orig_im_id)
+    else:
+        good_ids_scene[good_id[0]] = [orig_im_id]
+with open(good_out_yaml_path, 'w') as f:
+    yaml.dump(good_ids_scene, f)
 
 good_counts = {}
 for good_id in good_ids:

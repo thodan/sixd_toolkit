@@ -23,6 +23,8 @@ def load_cam_params(path):
                        [0.0, c['fy'], c['cy']],
                        [0.0, 0.0, 1.0]])
     }
+    if 'depth_scale' in c.keys():
+        cam['depth_scale'] = float(c['depth_scale'])
     return cam
 
 def read_im(path):
@@ -67,7 +69,7 @@ def load_obj_info(path):
                 info[eid]['cam_t_m2c'] = np.array(info[eid]['cam_t_m2c']).reshape((3, 1))
     return info
 
-def load_scene_info(path):
+def load_info(path):
     with open(path, 'r') as f:
         info = yaml.load(f, Loader=yaml.CLoader)
         for eid in info.keys():
@@ -79,9 +81,9 @@ def load_scene_info(path):
                 info[eid]['cam_t_w2c'] = np.array(info[eid]['cam_t_w2c']).reshape((3, 1))
     return info
 
-def save_scene_info(path, scene_info):
-    for im_id in sorted(scene_info.keys()):
-        im_info = scene_info[im_id]
+def save_info(path, info):
+    for im_id in sorted(info.keys()):
+        im_info = info[im_id]
         if 'cam_K' in im_info.keys():
             im_info['cam_K'] = im_info['cam_K'].flatten().tolist()
         if 'cam_R_w2c' in im_info.keys():
@@ -89,9 +91,9 @@ def save_scene_info(path, scene_info):
         if 'cam_t_w2c' in im_info.keys():
             im_info['cam_t_w2c'] = im_info['cam_t_w2c'].flatten().tolist()
     with open(path, 'w') as f:
-        yaml.dump(scene_info, f, width=10000)
+        yaml.dump(info, f, width=10000)
 
-def load_scene_gt(path):
+def load_gt(path):
     with open(path, 'r') as f:
         gts = yaml.load(f, Loader=yaml.CLoader)
         for im_id, gts_im in gts.items():
@@ -102,9 +104,9 @@ def load_scene_gt(path):
                     gt['cam_t_m2c'] = np.array(gt['cam_t_m2c']).reshape((3, 1))
     return gts
 
-def save_scene_gt(path, scene_gt):
-    for im_id in sorted(scene_gt.keys()):
-        im_gts = scene_gt[im_id]
+def save_gt(path, gts):
+    for im_id in sorted(gts.keys()):
+        im_gts = gts[im_id]
         for gt in im_gts:
             if 'cam_R_m2c' in gt.keys():
                 gt['cam_R_m2c'] = gt['cam_R_m2c'].flatten().tolist()
@@ -113,7 +115,7 @@ def save_scene_gt(path, scene_gt):
             if 'obj_bb' in gt.keys():
                 gt['obj_bb'] = [int(x) for x in gt['obj_bb']]
     with open(path, 'w') as f:
-        yaml.dump(scene_gt, f, width=10000)
+        yaml.dump(gts, f, width=10000)
 
 def load_ply(path):
     """

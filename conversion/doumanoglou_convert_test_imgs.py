@@ -21,12 +21,13 @@ obj_pose_mpath = par.base_path + 'orig/test/scene_{:02d}/{}{}_{}.txt'
 model_mpath = par.base_path + 'models/obj_{:02d}.ply'
 bbox_cens_path = par.base_path + 'bbox_cens.yml'
 
-scene_info_mpath = par.base_path + 'test/scene_{:02d}/scene_info.yml'
-scene_gt_mpath = par.base_path + 'test/scene_{:02d}/scene_gt.yml'
-rgb_out_mpath = par.base_path + 'test/scene_{:02d}/rgb/{:04d}.png'
-depth_out_mpath = par.base_path + 'test/scene_{:02d}/depth/{:04d}.png'
+scene_info_mpath = par.base_path + 'test/{:02d}/info.yml'
+scene_gt_mpath = par.base_path + 'test/{:02d}/gt.yml'
+rgb_out_mpath = par.base_path + 'test/{:02d}/rgb/{:04d}.png'
+depth_out_mpath = par.base_path + 'test/{:02d}/depth/{:04d}.png'
 
-scenes = {1: {1: 15}, 2: {2: 5}, 3: {1: 9, 2: 4}} # IDs and counts of objects included in the scenes
+# IDs and counts of objects included in the scenes
+scenes = {1: {1: 15}, 2: {2: 5}, 3: {1: 9, 2: 4}}
 # scenes = {2: {2: 5}, 3: {1: 9, 2: 4}}
 obj_names = {1: 'coffee_cup', 2: 'juice'}
 
@@ -219,5 +220,5 @@ for scene_id in sorted(scenes.keys()):
 
         im_id_out += 1
 
-    inout.save_scene_info(scene_info_mpath.format(scene_id), scene_info)
-    inout.save_scene_gt(scene_gt_mpath.format(scene_id), scene_gt)
+    inout.save_info(scene_info_mpath.format(scene_id), scene_info)
+    inout.save_gt(scene_gt_mpath.format(scene_id), scene_gt)

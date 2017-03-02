@@ -20,10 +20,10 @@ from params import par_hinterstoisser as par
 import hinter_flip
 
 base_path = '/local/datasets/tlod/hinterstoisser/'
-rgb_mpath = base_path + 'test/scene_02/rgb/{:04d}.png'
+rgb_mpath = base_path + 'test/02/rgb/{:04d}.png'
 model_mpath = base_path + 'models/obj_{:02d}.ply' # Already transformed
 pose_mpath = '/local/datasets/tlod/dresden/occlusion/poses/{}/info_{:05d}.txt'
-scene_gt_path = base_path + 'test/scene_02/scene_gt_brachmann.yml'
+scene_gt_path = base_path + 'test/02/scene_gt_brachmann.yml'
 
 obj_names_id_map = {'Ape': 1, 'Can': 5, 'Cat': 6, 'Driller': 8, 'Duck': 9,
                     'Eggbox': 10, 'Glue': 11, 'Holepuncher': 12}

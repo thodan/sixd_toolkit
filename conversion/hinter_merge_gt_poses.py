@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath('..'))
 
 gt_poses_1_path = '/local/datasets/tlod/hinterstoisser/backup/scene_02_separated_gts/scene_gt.yml'
 gt_poses_2_path = '/local/datasets/tlod/hinterstoisser/backup/scene_02_separated_gts/scene_gt_brachmann.yml'
-gt_poses_out_path = '/local/datasets/tlod/hinterstoisser/test/scene_02/scene_gt.yml'
+gt_poses_out_path = '/local/datasets/tlod/hinterstoisser/test/02/scene_gt.yml'
 
 with open(gt_poses_1_path, 'r') as f:
     gt_poses_1 = yaml.load(f, Loader=yaml.CLoader)
