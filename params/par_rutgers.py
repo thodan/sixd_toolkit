@@ -3,8 +3,8 @@
 
 from pysixdb import inout
 
-obj_count = 24
-scene_count = 24
+obj_count = 14
+scene_count = 14
 
 test_im_size = (640, 480)
 

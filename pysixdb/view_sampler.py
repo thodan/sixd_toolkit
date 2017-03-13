@@ -161,14 +161,16 @@ def hinter_sampling(min_n_pts, radius=1):
 
     return pts, pts_level
 
-def sample_views(min_n_views, radius=1, hemisphere=False):
+def sample_views(min_n_views, radius=1,
+                 azimuth_range=(0, 2 * math.pi),
+                 elev_range=(-0.5 * math.pi, 0.5 * math.pi)):
     '''
     Viewpoint sampling from a view sphere.
 
     :param min_n_views: Minimum required number of views on the whole view sphere.
     :param radius: Radius of the view sphere.
-    :param hemisphere: Indicates whether to return views only from the top
-                       hemisphere or from the whole sphere.
+    :param azimuth_range: Azimuth range from which the viewpoints are sampled.
+    :param elev_range: Elevation range from which the viewpoints are sampled.
     :return: List of views, each represented by a 3x3 rotation matrix and
              a 3x1 translation vector.
     '''
@@ -182,8 +184,21 @@ def sample_views(min_n_views, radius=1, hemisphere=False):
 
     views = []
     for pt in pts:
+        # Azimuth from (0, 2 * pi)
+        azimuth = math.atan2(pt[1], pt[0])
+        if azimuth < 0:
+            azimuth += 2.0 * math.pi
+
+        # Elevation from (-0.5 * pi, 0.5 * pi)
+        a = np.linalg.norm(pt)
+        b = np.linalg.norm([pt[0], pt[1], 0])
+        elev = math.acos(b / a)
+        if pt[2] < 0:
+            elev = -elev
+
         # if hemisphere and (pt[2] < 0 or pt[0] < 0 or pt[1] < 0):
-        if hemisphere and pt[2] < 0:
+        if not (azimuth_range[0] <= azimuth <= azimuth_range[1] and
+                elev_range[0] <= elev <= elev_range[1]):
             continue
 
         # Rotation matrix

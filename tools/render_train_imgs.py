@@ -5,22 +5,72 @@
 
 import os
 import sys
+import math
 import yaml
 import numpy as np
 import cv2
 
 sys.path.append(os.path.abspath('..'))
 from pysixdb import view_sampler, inout, misc, renderer
-# from params import par_hinterstoisser as par
 from params import par_rutgers as par
+
+# dataset = 'hinterstoisser'
+# dataset = 'tejani'
+# dataset = 'rutgers'
+dataset = 'tud_light'
+
+
+if dataset == 'hinterstoisser':
+    from params import par_hinterstoisser as par
+
+    # Range of object dist. in test images: 346.31 - 1499.84 mm - with extended GT
+    # (there are only 3 occurrences under 400 mm)
+    # Range of object dist. in test images: ~600 - ~1100 mm - with only original GT
+    radii = [400] # Radii of the view sphere [mm]
+    # radii = range(600, 1101, 100)
+    # radii = range(400, 1501, 100)
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (0, 0.5 * math.pi)
+
+elif dataset == 'tejani':
+    from params import par_tejani as par
+
+    # Range of object dist. in test images: 509.12 - 1120.41 mm
+    radii = [500] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100)
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (0, 0.5 * math.pi)
+
+elif dataset == 'rutgers':
+    from params import par_rutgers as par
+
+    # Range of object distances in test images: 594.41 - 739.12 mm
+    radii = [590] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100) # [mm]
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (-0.5 * math.pi, 0.5 * math.pi)
+
+elif dataset == 'tud_light':
+    from params import par_tud_light as par
+
+    # Range of object distances in test images: 851.29 - 2016.14 mm
+    radii = [850] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100) # [mm]
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (-0.4363, 0.5 * math.pi) # (-25, 90) [deg]
+
 
 # Objects to render
 obj_ids = range(1, par.obj_count + 1)
 
-# Rendering parameters
-min_n_views = 1000 # The final number of views depends on the sampling method
-radii = [400] # Radii of the view sphere
-halfsphere = True # True - views only from the top hemisphere
+# Minimum required number of views on the whole view sphere. The final number of
+# views depends on the sampling method.
+min_n_views = 1000
+
 clip_near = 10 # [mm]
 clip_far = 10000 # [mm]
 ambient_weight = 0.8 # Weight of ambient light [0, 1]
@@ -33,13 +83,14 @@ shading = 'phong' # 'flat', 'phong'
 ssaa_fact = 4
 
 # Output path masks
-out_rgb_mpath = '../output/render/obj_{:02d}/rgb/{:04d}.png'
-out_depth_mpath = '../output/render/obj_{:02d}/depth/{:04d}.png'
-out_obj_info_path = '../output/render/obj_info.yml'
-out_views_vis_mpath = '../output/render/views_hinter_radius={}.ply'
+out_rgb_mpath = '../output/render/{:02d}/rgb/{:04d}.png'
+out_depth_mpath = '../output/render/{:02d}/depth/{:04d}.png'
+out_obj_info_path = '../output/render/{:02d}/info.yml'
+out_obj_gt_path = '../output/render/{:02d}/gt.yml'
+out_views_vis_mpath = '../output/render/views_radius={}.ply'
 
 # Prepare output folder
-misc.ensure_dir(os.path.dirname(out_obj_info_path))
+# misc.ensure_dir(os.path.dirname(out_obj_info_path))
 
 # Image size and K for SSAA
 im_size_rgb = [int(round(x * float(ssaa_fact))) for x in par.cam['im_size']]
@@ -63,11 +114,12 @@ for obj_id in obj_ids:
         model_texture = None
 
     obj_info = {}
+    obj_gt = {}
     im_id = 0
     for radius in radii:
         # Sample views
         views, views_level = view_sampler.sample_views(min_n_views, radius,
-                                                       halfsphere)
+                                                       azimuth_range, elev_range)
         print('Sampled views: ' + str(len(views)))
         view_sampler.save_vis(out_views_vis_mpath.format(str(radius)),
                               views, views_level)
@@ -103,12 +155,16 @@ for obj_id in obj_ids:
 
             obj_info[im_id] = {
                 'cam_K': par.cam['K'].flatten().tolist(),
+                'view_level': int(views_level[view_id]),
+                #'sphere_radius': float(radius)
+            }
+
+            obj_gt[im_id] = [{
                 'cam_R_m2c': view['R'].flatten().tolist(),
                 'cam_t_m2c': view['t'].flatten().tolist(),
                 'obj_bb': [int(x) for x in obj_bb],
-                'view_level': int(views_level[view_id]),
-                'sphere_radius': float(radius)
-            }
+                'obj_id': int(obj_id)
+            }]
 
             im_id += 1
 
@@ -120,3 +176,6 @@ for obj_id in obj_ids:
     # Store metadata
     with open(out_obj_info_path.format(obj_id), 'w') as f:
         yaml.dump(obj_info, f, width=10000)
+
+    with open(out_obj_gt_path.format(obj_id), 'w') as f:
+        yaml.dump(obj_gt, f, width=10000)

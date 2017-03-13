@@ -12,10 +12,10 @@ sys.path.append(os.path.abspath('..'))
 from pysixdb import inout, misc, renderer
 
 # Dataset parameters
-# from params import par_hinterstoisser as par
+from params import par_hinterstoisser as par
 # from params import par_tejani as par
 # from params import par_doumanoglou as par
-from params import par_rutgers as par
+# from params import par_rutgers as par
 # from params import par_tud_light as par
 
 # Select IDs of scenes, images and GT poses to be processed.
