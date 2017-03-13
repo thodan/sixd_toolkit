@@ -33,14 +33,14 @@ of the same RGB-D frame.
 Each set of training and test images is accompanied with file info.yml that
 contains for each image the following information:
 
-* **cam\_K** - 3x3 intrinsic camera matrix K, saved row-wise.
-* **cam\_R\_w2c** (optional) - 3x3 rotation matrix R\_w2c, saved row-wise.
+* **cam\_K** - 3x3 intrinsic camera matrix K (saved row-wise).
+* **cam\_R\_w2c** (optional) - 3x3 rotation matrix R\_w2c (saved row-wise).
 * **cam\_t\_w2c** (optional) - 3x1 translation vector t\_w2c.
 * **view\_level** (optional) - Viewpoint level, see below.
 
 The matrix K may be different for each image. For example, in the case of the
 T-LESS dataset, the principal point is not constant because the provided images
-were obtained by cropping the region around the origin of the world coordinate
+were obtained by cropping a region around the origin of the world coordinate
 system (i.e. the center of the turntable) in the captured images.
 
 P\_w2c = K * [R\_w2c, t\_w2c] is the camera matrix which transforms 3D point
@@ -51,7 +51,7 @@ The ground truth object poses are provided in files gt.yml that contain for each
 object in each image the following information:
 
 * **obj\_id** - Object ID.
-* **cam\_R\_m2c** - 3x3 rotation matrix R\_m2c, saved row-wise.
+* **cam\_R\_m2c** - 3x3 rotation matrix R\_m2c (saved row-wise).
 * **cam\_t\_m2c** - 3x1 translation vector t\_m2c.
 * **obj\_bb** - 2D bounding box of projection of the 3D object model at the
     ground truth pose. It is given by (x, y, width, height), where (x, y) is the
@@ -62,7 +62,7 @@ x\_m in the model coordinate system to 3D point x\_c in the camera coordinate
 system: x\_c = P * x\_m.
 
 
-## Rendering of training images
+## Acquisition of training images
 
 The training images were obtained either by capturing of the real objects from
 various viewpoints or by rendering of 3D object models.
@@ -74,13 +74,13 @@ subdivision at which a viewpoint was added is saved in info.yml as view_level
 viewpoints obtained in the first subdivision step have view_level = 1, etc.).
 To reduce the number of viewpoints while preserving their uniform distribution
 over the sphere surface, one can consider only viewpoints with view_level <= n,
-where n is the maximum level of subdivision to be considered.
+where n is the highest considered level of subdivision.
 
-For rendering, the radius of the view sphere was set to the minimum distance of
-any modeled object over all test images. The distance was calculated from the
-camera center to the origin of the model coordinate system.
+For the rendering, the radius of the view sphere was set to the distance of the
+closest occurrence of any modeled object over all test images. The distance was
+calculated from the camera center to the origin of the model coordinate system.
 
-One can use this script to render more training images:
+The provided training images were rendered using this script:
 https://github.com/thodan/sixdb_toolkit/blob/master/tools/render_train_imgs.py
 
 
@@ -98,7 +98,7 @@ of face normals incident to a vertex [3].
 
 All coordinate systems (model, camera, world) are right-handed.
 
-The center of the 3D bounding box of the object model is aligned to the origin
+The center of the 3D bounding box of an object model is aligned to the origin
 of the model coordinate system. The Z coordinate is pointing upwards (when the
 object is seen standing "naturally up-right").
 
