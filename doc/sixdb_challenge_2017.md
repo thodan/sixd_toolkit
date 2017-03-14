@@ -24,8 +24,8 @@ the Z axis.
 We encourage the participants to provide more estimates per file. This will
 allow us to evaluate 1) top-N recall (i.e. Is there a correct estimate among the
 N with the highest score?), and 2) 6D localization of multiple instances of a
-single object, which is one of the tasks we are considering for a future
-editions of the benchmark.
+single object, which is one of the tasks we are considering for future editions
+of the benchmark.
 
 All test images are used for the evaluation, even those with multiple instances
 of the object of interest. The list of objects that are present in an image can
@@ -42,8 +42,8 @@ data types), and ZZ is ID of the test scene.
 
 ### Documentation
 
-Please provide a documentation of the evaluation in file eval_doc.txt with this
-format:
+You are required to provide a documentation of the evaluation in file
+eval_doc.txt with this format:
 
 ```
 SIXD challenge 2017 - documentation of evaluation
