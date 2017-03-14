@@ -39,6 +39,36 @@ DATASET is the dataset name (hinterstoisser, t-less, tud_light, rutgers, tejani,
 or doumanoglou), TESTTYPE is the data type (used only for datasets with more
 data types), and ZZ is ID of the test scene.
 
+
+### Documentation
+
+Please provide a documentation of the evaluation in file eval_doc.txt with this
+format:
+
+```
+SIXD challenge 2017 - documentation of evaluation
+Author: ...
+Method: ...
+PC tech specs: ... (for comparison of the running times)
+
+
+Experiment 1
+Dataset: ...
+Training input:
+    Object model type: ... (default, cad, reconst, etc.)
+    Image type: ... (rendered, real, light conditions for TUD Light, etc.)
+    Number of images per object: ...
+    Extra images: ... (in-plane rotations, extra rendered images, etc.)
+Test input:
+    Modality: ... (RGB-D, RGB or D)
+Other info: ...
+
+
+Experiment 2
+...
+```
+
+
 ### Example
 
 Test image 0000 (let us consider the image from the Primesense sensor) of test
