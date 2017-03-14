@@ -18,8 +18,8 @@ data types are available.
 The images are organized into subfolders:
 
 * **rgb** - Color images.
-* **depth** - Depth images (saved as 16-bit unsigned short).
-* **obj** (optional) - Object coordinate images.
+* **depth** - Depth images (&#x1F534;in millimeters?, saved as 16-bit unsigned short).
+* **obj** (optional) - Object coordinate images. &#x1F534;To nevim co je, chce to popsat format
 * **seg** (optional) - Segmentation masks of the objects (for training images).
 * **mask** (optional) - Masks of the regions of interest (for test images).
 
@@ -36,7 +36,7 @@ contains for each image the following information:
 * **cam\_K** - 3x3 intrinsic camera matrix K (saved row-wise).
 * **cam\_R\_w2c** (optional) - 3x3 rotation matrix R\_w2c (saved row-wise).
 * **cam\_t\_w2c** (optional) - 3x1 translation vector t\_w2c.
-* **view\_level** (optional) - Viewpoint level, see below.
+* **view\_level** (optional) - Viewpoint &#x1F534;division level, see below.
 
 The matrix K may be different for each image. For example, in the case of the
 T-LESS dataset, the principal point is not constant because the provided images
@@ -44,7 +44,7 @@ were obtained by cropping a region around the origin of the world coordinate
 system (i.e. the center of the turntable) in the captured images.
 
 P\_w2c = K * [R\_w2c, t\_w2c] is the camera matrix which transforms 3D point
-x\_w in the world coordinate system to 3D point x\_c in the camera coordinate
+x\_w in the world coordinate system to &#x1F534;2D point x\_c in the &#x1F534;image coordinate
 system: x\_c = P * x\_w.
 
 The ground truth object poses are provided in files gt.yml that contain for each
@@ -58,7 +58,7 @@ object in each image the following information:
     top-left corner of the bounding box. 
 
 P\_m2c = K * [R\_m2c, t\_m2c] is the camera matrix which transforms 3D point
-x\_m in the model coordinate system to 3D point x\_c in the camera coordinate
+x\_m in the model coordinate system to &#x1F534;2D point x\_c in the &#x1F534;image coordinate
 system: x\_c = P * x\_m.
 
 
@@ -98,11 +98,12 @@ of face normals incident to a vertex [3].
 
 All coordinate systems (model, camera, world) are right-handed.
 
-The center of the 3D bounding box of an object model is aligned to the origin
-of the model coordinate system. The Z coordinate is pointing upwards (when the
-object is seen standing "naturally up-right").
+&#x1F534;The Z coordinate of the world coordinate system points up.
 
-The camera coordinate system is as in OpenCV:
+&#x1F534;In the model coordinate system the Z coordinate also points up (when the
+object is standing "naturally up-right") and the origin is located at the center of the model's 3D bounding box.
+
+&#x1F534;The camera coordinate system is as in OpenCV with the Z coordinate pointing forward away from the camera:
 http://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
 
 
@@ -112,6 +113,7 @@ Intrinsic camera parameters can be found in file camera.yml. However, these
 parameters are meant only for simulation of the used sensor when rendering the
 training images. Intrinsic camera parameters for individual images are in files
 info.yml.
+&#x1F534;Co tam je? Matice K a parametry radialniho zkresleni? V OpenCV formatu?
 
 
 ## Units
