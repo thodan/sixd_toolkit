@@ -1,14 +1,9 @@
-# 6DB: Format of results
-
-Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz), Center for Machine Perception,
-Czech Technical University in Prague
+# SIXD challenge 2017 - format of results
 
 
-## Evaluation problem: 6D localization of a single instance of a single object
-
-For a test image XXXX and object YY, which is present in that image, the evaluated
-method is expected to estimate the 6D pose of an instance of object YY and save
-the results in file **XXXX\_YY.txt**.
+For a test image XXXX and object YY, which is present in that image, the
+evaluated method is expected to estimate the 6D pose of an instance of object YY
+and save the results in file **XXXX\_YY.txt**.
 
 The first line of the file with results contains a single real number
 representing the run time (in seconds, -1 if not available). Every other line
@@ -27,8 +22,8 @@ camera coordinate system is as defined in OpenCV with the camera looking along
 the Z axis.
 
 We encourage the participants to provide more estimates per file. This will
-allow us to evaluate 1) top-N recall (i.e. Is there a correct estimate among the N
-with the highest score?), and 2) 6D localization of multiple instances of a
+allow us to evaluate 1) top-N recall (i.e. Is there a correct estimate among the
+N with the highest score?), and 2) 6D localization of multiple instances of a
 single object, which is one of the tasks we are considering for a future
 editions of the benchmark.
 
