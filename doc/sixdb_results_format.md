@@ -21,9 +21,10 @@ object_id score r11 r12 r13 r21 r22 r23 r31 r32 r33 t1 t2 t3
 where score is a confidence of the estimate, R = [r11 r12 r13; r21 r22 r23;
 r31 r32 r33] is a 3x3 rotation matrix saved row-wise, and t = [t1 t2 t3]' is a
 3x1 translation vector (in mm). P = K * [R t] is the camera matrix that
-transforms 3D point x\_m in the model coordinate system to &#x1F534;2D point x\_c in the
-&#x1F534;image coordinate system: x\_c = P * x\_m. 
-The camera coordinate system is as defined in OpenCV.
+transforms 3D point p\_m = [x, y, z]' in the model coordinate system to 2D point
+p\_i = [u, v, 1]' in the image coordinate system: s * p\_i = P * p\_m. The
+camera coordinate system is as defined in OpenCV with the camera looking along
+the Z axis.
 
 We encourage the participants to provide more estimates per file. This will
 allow us to evaluate 1) top-N recall (i.e. Is there a correct estimate among the N
