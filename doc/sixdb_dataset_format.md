@@ -1,7 +1,4 @@
-# 6DB: Format of datasets
-
-Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz), Center for Machine Perception,
-Czech Technical University in Prague
+# SIXD: Format of datasets
 
 
 ## Directory structure
