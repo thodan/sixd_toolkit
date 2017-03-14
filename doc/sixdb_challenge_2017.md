@@ -1,4 +1,4 @@
-# SIXD Challenge 2017: format of results
+# SIXD challenge 2017: format of results
 
 
 For a test image XXXX and object YY, which is present in that image, the

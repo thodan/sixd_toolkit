@@ -1,4 +1,4 @@
-# SIXD Challenge 2017: Format of datasets
+# SIXD challenge 2017: format of datasets
 
 
 ## Directory structure
