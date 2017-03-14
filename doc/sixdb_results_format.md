@@ -6,13 +6,13 @@ Czech Technical University in Prague
 
 ## Evaluation problem: 6D localization of a single instance of a single object
 
-For test image XXXX and object YY, which is present in that image, the evaluated
+For a test image XXXX and object YY, which is present in that image, the evaluated
 method is expected to estimate the 6D pose of an instance of object YY and save
 the results in file **XXXX\_YY.txt**.
 
-The first line of the file with results contains a single decimal number
+The first line of the file with results contains a single real number
 representing the run time (in seconds, -1 if not available). Every other line
-contains a 6D object pose estimate in this format:
+contains a 6D object pose estimate in the following format:
 
 ```
 object_id score r11 r12 r13 r21 r22 r23 r31 r32 r33 t1 t2 t3
@@ -21,14 +21,14 @@ object_id score r11 r12 r13 r21 r22 r23 r31 r32 r33 t1 t2 t3
 where score is a confidence of the estimate, R = [r11 r12 r13; r21 r22 r23;
 r31 r32 r33] is a 3x3 rotation matrix saved row-wise, and t = [t1 t2 t3]' is a
 3x1 translation vector (in mm). P = K * [R t] is the camera matrix that
-transforms 3D point x\_m in the model coordinate system to 3D point x\_c in the
-camera coordinate system: x\_c = P * x\_m. The camera coordinate system is as
-defined in OpenCV.
+transforms 3D point x\_m in the model coordinate system to &#x1F534;2D point x\_c in the
+&#x1F534;image coordinate system: x\_c = P * x\_m. 
+The camera coordinate system is as defined in OpenCV.
 
 We encourage the participants to provide more estimates per file. This will
-allow to evaluate 1) top-N recall (i.e. Is there a correct estimate among the N
+allow us to evaluate 1) top-N recall (i.e. Is there a correct estimate among the N
 with the highest score?), and 2) 6D localization of multiple instances of a
-single object, which is one of the tasks we are considering for the future
+single object, which is one of the tasks we are considering for a future
 editions of the benchmark.
 
 All test images are used for the evaluation, even those with multiple instances
