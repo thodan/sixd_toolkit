@@ -15,19 +15,23 @@ from pysixdb import inout
 
 # from params import par_hinterstoisser as par
 # from params import par_tejani as par
-# from params import par_rutgers as par
-from params import par_tud_light as par
+from params import par_rutgers as par
+# from params import par_tud_light as par
 
 scene_ids = range(1, par.scene_count + 1)
 obj_dists = []
 azimuths = []
 elevs = []
+ims_count = 0
 for scene_id in scene_ids:
     print('Processing scene: ' + str(scene_id))
     scene_gt = inout.load_gt(par.scene_gt_mpath.format(scene_id))
+    ims_count += len(scene_gt)
 
     for im_id, im_gts in scene_gt.items():
         for im_gt in im_gts:
+            if scene_id == 2 and im_gt['obj_id'] != 2:
+                continue
             obj_dist = np.linalg.norm(im_gt['cam_t_m2c'])
             obj_dists.append(obj_dist)
 
@@ -47,6 +51,8 @@ for scene_id in scene_ids:
             if cam_orig_m[2, 0] < 0:
                 elev = -elev
             elevs.append((180.0 / math.pi) * elev)
+
+print('Number of images: ' + str(ims_count))
 
 print('Min dist: ' + str(min(obj_dists)))
 print('Max dist: ' + str(max(obj_dists)))
