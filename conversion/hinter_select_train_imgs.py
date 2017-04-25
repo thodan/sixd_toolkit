@@ -9,7 +9,7 @@ import shutil
 import yaml
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import misc
+from pysixd import misc
 
 obj_ids = range(1, 16)
 # obj_ids = range(14, 16)

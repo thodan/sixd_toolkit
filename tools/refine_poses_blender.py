@@ -7,7 +7,7 @@ A script to facilitate refinement of ground truth 6D object poses in Blender.
 1) Open Blender console and run:
 ----------
 import imp
-script_path = '/home/tom/th_data/cmp/projects/sixdb/sixdb_toolkit/tools/refine_poses_blender.py'
+script_path = '/home/tom/th_data/cmp/projects/sixd/sixd_toolkit/tools/refine_poses_blender.py'
 p = imp.load_source("b", script_path)
 p.init(bpy)
 ----------
@@ -42,9 +42,9 @@ import os
 import sys
 import numpy as np
 
-sixdb_toolkit_path = '/home/tom/th_data/cmp/projects/sixdb/sixdb_toolkit'
-sys.path.append(os.path.abspath(sixdb_toolkit_path))
-from pysixdb import inout, misc, transform
+sixd_toolkit_path = '/home/tom/th_data/cmp/projects/sixd/sixd_toolkit'
+sys.path.append(os.path.abspath(sixd_toolkit_path))
+from pysixd import inout, misc, transform
 
 # Dataset parameters
 # from params import par_hinterstoisser as par

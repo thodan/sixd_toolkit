@@ -7,7 +7,7 @@ import glob
 import numpy as np
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import inout
+from pysixd import inout
 # from params import par_hinterstoisser as par
 # from params import par_tejani as par
 from params import par_doumanoglou as par

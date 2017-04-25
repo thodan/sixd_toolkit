@@ -6,7 +6,7 @@ import sys
 import yaml
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import inout
+from pysixd import inout
 
 model_mpath = '/local/datasets/tlod/imperial/tejani/models/obj_{:02d}.ply'
 bbox_cens_path = '../output/tejani_bbox_cens.yml' # File to save bbox centers

@@ -1,7 +1,7 @@
 # Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
 # Center for Machine Perception, Czech Technical University in Prague
 
-from pysixdb import inout
+from pysixd import inout
 
 obj_count = 30
 scene_count = 20

@@ -6,7 +6,7 @@ import sys
 import yaml
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import inout
+from pysixd import inout
 
 from params import par_doumanoglou as par
 

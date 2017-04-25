@@ -7,7 +7,7 @@ import os
 import sys
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import view_sampler, misc
+from pysixd import view_sampler, misc
 
 min_n_views = 642
 radius = 1

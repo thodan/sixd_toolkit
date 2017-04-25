@@ -10,7 +10,7 @@ import numpy as np
 import yaml
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import inout, misc, renderer
+from pysixd import inout, misc, renderer
 from params import par_tejani as par
 
 base_path = '/local/datasets/tlod/imperial/tejani/'

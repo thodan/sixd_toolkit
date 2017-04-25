@@ -7,7 +7,7 @@ import math
 import yaml
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import inout, transform
+from pysixd import inout, transform
 import hinter_flip
 
 model_mpath = '/local/datasets/tlod/hinterstoisser/models/obj_{:02d}.ply'

@@ -13,7 +13,8 @@ contains a 6D object pose estimate in the following format:
 object_id score r11 r12 r13 r21 r22 r23 r31 r32 r33 t1 t2 t3
 ```
 
-where score is a confidence of the estimate, R = [r11 r12 r13; r21 r22 r23;
+where score is a confidence of the estimate (the range of the score is not
+restricted), R = [r11 r12 r13; r21 r22 r23;
 r31 r32 r33] is a 3x3 rotation matrix saved row-wise, and t = [t1 t2 t3]' is a
 3x1 translation vector (in mm). P = K * [R t] is the camera matrix that
 transforms 3D point p\_m = [x, y, z, 1]' in the model coordinate system to 2D
@@ -33,40 +34,12 @@ be retrieved from file gt.yml.
 
 The files with results are expected in this structure:
 
-**DATASET[\_TESTTYPE]/ZZ/XXXX\_YY.txt**
+**METHOD\_DATASET[\_TESTTYPE]/ZZ/XXXX\_YY.txt**
 
-DATASET is the dataset name (hinterstoisser, t-less, tud_light, rutgers, tejani,
-or doumanoglou), TESTTYPE is the data type (used only for datasets with more
-data types), and ZZ is ID of the test scene.
-
-
-### Documentation
-
-You are required to provide a documentation of the evaluation in file
-eval_doc.txt with this format:
-
-```
-SIXD challenge 2017 - documentation of evaluation
-Author: ...
-Method: ...
-PC tech specs: ... (for comparison of the running times)
-
-
-Experiment 1
-Dataset: ...
-Training input:
-    Object model type: ... (default, cad, reconst, etc.)
-    Image type: ... (rendered, real, light conditions for TUD Light, etc.)
-    Number of images per object: ...
-    Extra images: ... (in-plane rotations, extra rendered images, etc.)
-Test input:
-    Modality: ... (RGB-D, RGB or D)
-Other info: ...
-
-
-Experiment 2
-...
-```
+METHOD is the name of your method, DATASET is the dataset name (hinterstoisser,
+t-less, tud_light, rutgers, tejani, or doumanoglou), TESTTYPE is the data type
+(used only for datasets with more data types), and ZZ, XXXX, and YY is the ID of
+the test scene, the test image and the object.
 
 
 ### Example
@@ -93,4 +66,26 @@ Example content of file 0000_25.txt:
 25 1.882 0.263059 -0.946784 0.18547 -0.00346377 -0.193166 -0.98116 0.964774 0.25746 -0.0540936 75.3467 -28.4081 771.788
 25 1.195 -0.171041 -0.0236642 -0.98498 -0.892308 0.427616 0.144675 0.41777 0.90365 -0.0942557 -69.8224 73.1472 800.083
 25 1.874 0.180726 -0.73069 0.658354 0.0538221 -0.661026 -0.74843 0.98206 0.170694 -0.0801374 19.7014 -68.7299 781.424
+```
+
+
+### Documentation
+
+A documentation of the evaluation is expected in file
+**eval_doc_METHOD\_DATASET[\_TESTTYPE].txt** with this format:
+
+```
+SIXD challenge 2017 - documentation of the evaluation
+Author: ...
+Method: ... (any related publications)
+PC tech specs: ... (for comparison of the running times)
+Dataset: ...
+Training input:
+    Object model type: ... (default, cad, reconst, none)
+    Image type: ... (real, rendered, which light conditions for TUD Light, etc.)
+    Number of images per object: ...
+Test input:
+    Modality: ... (RGB-D, RGB or D)
+Other info: ...
+...
 ```

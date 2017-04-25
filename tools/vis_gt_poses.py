@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import inout, misc, renderer
+from pysixd import inout, misc, renderer
 
 # Dataset parameters
 from params import par_hinterstoisser as par

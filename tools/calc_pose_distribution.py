@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import inout
+from pysixd import inout
 
 # from params import par_hinterstoisser as par
 # from params import par_tejani as par

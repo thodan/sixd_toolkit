@@ -82,7 +82,7 @@ closest occurrence of any modeled object over all test images. The distance was
 calculated from the camera center to the origin of the model coordinate system.
 
 The provided training images were rendered using this script:
-https://github.com/thodan/sixdb_toolkit/blob/master/tools/render_train_imgs.py
+https://github.com/thodan/sixd_toolkit/blob/master/tools/render_train_imgs.py
 
 
 ## 3D object models

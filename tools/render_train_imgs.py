@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 
 sys.path.append(os.path.abspath('..'))
-from pysixdb import view_sampler, inout, misc, renderer
+from pysixd import view_sampler, inout, misc, renderer
 from params import par_rutgers as par
 
 # dataset = 'hinterstoisser'
