@@ -69,24 +69,32 @@ Example content of file 0000_25.txt:
 ```
 
 
-### Documentation
+### Documentation of results
 
 If you want your results to be included in a publication about the challenge,
-a documentation of the evaluation is required. It is expected in file
-**METHOD\_DATASET[\_TESTTYPE]/eval_doc.txt** with this format:
+a documentation is required.
+
+It is expected in file **METHOD\_DATASET[\_TESTTYPE]/eval_doc.txt** with this
+format:
 
 ```
-SIXD challenge 2017 - documentation of the evaluation
+SIXD challenge 2017 - documentation of results
+
 Author: ...
 Method: ... (any related publications)
-PC tech specs: ... (for comparison of the running times)
+Parameter setting: ... (values of the crucial parameters of the method)
+Implementation: ... (a link to the implementation, if available)
+PC tech specs: ... (for comparison of running times)
+
 Dataset: ...
 Training input:
-    Object model type: ... (default, cad, reconst, none)
-    Image type: ... (real, rendered, which light conditions for TUD Light, etc.)
-    Number of images per object: ...
+    3D model type: ... (none, default, for T-LESS: cad or reconst)
+    Image type: ... (none, real, rendered)
+    Image modality: ... (RGB-D, RGB, D)
+    Light conditions: ... (only for real images from TUD Light)
+    Viewpoint sampling: ... (if other than the default training set was used)
+    Image augmentation: ... (in-plane rotation, extra noise, etc.)
+    Images per object: ... (including the augmented images)
 Test input:
-    Modality: ... (RGB-D, RGB or D)
-Other info: ...
-...
+    Image modality: ... (RGB-D, RGB, D)
 ```
