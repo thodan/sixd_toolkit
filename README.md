@@ -1,6 +1,6 @@
 ### SIXD Toolkit
 
-Python scripts to facilitate participation in SIXD Challenge.
+Python scripts to facilitate participation in the SIXD Challenge.
 
 - **conversion** - Scripts that were used to convert the datasets from the original format to the SIXD standard format.
 - **doc** - Documentation, conventions, etc.
