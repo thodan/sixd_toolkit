@@ -47,9 +47,11 @@ sys.path.append(os.path.abspath(sixd_toolkit_path))
 from pysixd import inout, misc, transform
 
 # Dataset parameters
-# from params import par_hinterstoisser as par
-# from params import par_tejani as par
-from params import par_doumanoglou as par
+from params.dataset_params import get_dataset_params
+# par = get_dataset_params('hinterstoisser')
+# par = get_dataset_params('tejani')
+par = get_dataset_params('doumanoglou')
+# par = get_dataset_params('tudlight')
 
 # Path to a 3D model of the scene
 #scene_model_mpath = None
@@ -96,7 +98,7 @@ def add_obj(obj_id):
     """
     Adds the specified object to the scene.
     """
-    model_path = par.model_mpath.format(obj_id)
+    model_path = par['model_mpath'].format(obj_id)
     print('Loading model {}: {}'.format(obj_id, model_path))
     bpy.ops.import_mesh.ply(filepath=model_path)
 
@@ -131,7 +133,7 @@ def load_scene(scene_id):
     global scene_gt
 
     # Load scene info
-    scene_info_path = par.scene_info_mpath.format(scene_id)
+    scene_info_path = par['scene_info_mpath'].format(scene_id)
     print('Loading scene info: ' + scene_info_path)
     scene_info = inout.load_info(scene_info_path)
     ref_im_id = sorted(scene_info.keys())[ref_im_ind]
@@ -141,7 +143,7 @@ def load_scene(scene_id):
     t_w2c = scene_info_ref['cam_t_w2c']
 
     # Load ground truth poses for the reference camera coordinate system
-    scene_gt_path = par.scene_gt_mpath.format(scene_id)
+    scene_gt_path = par['scene_gt_mpath'].format(scene_id)
     print('Loading GT poses: ' + scene_gt_path)
     scene_gt = inout.load_gt(scene_gt_path)
     scene_gt_ref = scene_gt[ref_im_id]
@@ -151,7 +153,7 @@ def load_scene(scene_id):
 
     # Load models of objects that are present in the scene
     for gt in scene_gt_ref:
-        model_path = par.model_mpath.format(gt['obj_id'])
+        model_path = par['model_mpath'].format(gt['obj_id'])
         print('Loading model {}: {}'.format(gt['obj_id'], model_path))
         bpy.ops.import_mesh.ply(filepath=model_path)
 
@@ -210,7 +212,7 @@ def save_scene(scene_id):
     obj_ids = set([p['obj_id'] for p in ref_obj_poses])
     models = {}
     for obj_id in obj_ids:
-        models[obj_id] = inout.load_ply(par.model_mpath.format(obj_id))
+        models[obj_id] = inout.load_ply(par['model_mpath'].format(obj_id))
 
     # Transform the poses to the camera coordinate systems using the known
     # camera-to-world transformations
@@ -229,7 +231,7 @@ def save_scene(scene_id):
                                       R_m2c_new, t_m2c_new)
             pts_im = np.round(pts_im).astype(np.int)
             ys, xs = pts_im[:, 1], pts_im[:, 0]
-            obj_bb = misc.calc_2d_bbox(xs, ys, par.test_im_size)
+            obj_bb = misc.calc_2d_bbox(xs, ys, par['test_im_size'])
 
             scene_gt[im_id].append({
                 'obj_id': int(obj_id),
@@ -239,6 +241,6 @@ def save_scene(scene_id):
             })
 
     # Save the updated ground truth poses
-    scene_gt_path = par.scene_gt_mpath.format(scene_id)
+    scene_gt_path = par['scene_gt_mpath'].format(scene_id)
     print('Saving GT poses: ' + scene_gt_path)
     inout.save_gt(scene_gt_path, scene_gt)

@@ -13,19 +13,20 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout
 
-# from params import par_hinterstoisser as par
-# from params import par_tejani as par
-from params import par_rutgers as par
-# from params import par_tud_light as par
+from params.dataset_params import get_dataset_params
+# par = get_dataset_params('hinterstoisser')
+# par = get_dataset_params('tejani')
+par = get_dataset_params('rutgers')
+# par = get_dataset_params('tudlight')
 
-scene_ids = range(1, par.scene_count + 1)
+scene_ids = range(1, par['scene_count'] + 1)
 obj_dists = []
 azimuths = []
 elevs = []
 ims_count = 0
 for scene_id in scene_ids:
     print('Processing scene: ' + str(scene_id))
-    scene_gt = inout.load_gt(par.scene_gt_mpath.format(scene_id))
+    scene_gt = inout.load_gt(par['scene_gt_mpath'].format(scene_id))
     ims_count += len(scene_gt)
 
     for im_id, im_gts in scene_gt.items():

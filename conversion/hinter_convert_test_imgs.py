@@ -13,8 +13,10 @@ import yaml
 
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout, misc, transform, renderer
-from params import par_hinterstoisser as par
 import hinter_flip
+
+from params.dataset_params import get_dataset_params
+par = get_dataset_params('hinterstoisser')
 
 base_path = '/local/datasets/tlod/hinterstoisser/'
 
@@ -120,11 +122,11 @@ for scene_id in scene_ids:
         t_m2c = t_m2c + R_m2c.dot(R_model.dot(t_model))
 
         # Get 2D bounding box of the object model at the ground truth pose
-        obj_bb = misc.calc_pose_2d_bbox(model, par.cam['im_size'], par.cam['K'], R_m2c, t_m2c)
+        obj_bb = misc.calc_pose_2d_bbox(model, par['cam']['im_size'], par['cam']['K'], R_m2c, t_m2c)
 
         # Visualisation
         if False:
-            ren_rgb = renderer.render(model, par.cam['im_size'], par.cam['K'], R_m2c, t_m2c, mode='rgb')
+            ren_rgb = renderer.render(model, par['cam']['im_size'], par['cam']['K'], R_m2c, t_m2c, mode='rgb')
             vis_rgb = 0.4 * rgb.astype(np.float32) + 0.6 * ren_rgb.astype(np.float32)
             vis_rgb = vis_rgb.astype(np.uint8)
             vis_rgb = misc.draw_rect(vis_rgb, obj_bb)
@@ -141,7 +143,7 @@ for scene_id in scene_ids:
         ]
 
         scene_info[im_id] = {
-            'cam_K': par.cam['K'].flatten().tolist()
+            'cam_K': par['cam']['K'].flatten().tolist()
         }
 
     def float_representer(dumper, value):

@@ -12,19 +12,20 @@ import yaml
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout, misc, renderer
 
-from params import par_doumanoglou as par
+from params.dataset_params import get_dataset_params
+par = get_dataset_params('doumanoglou')
 
-rgb_in_mpath = par.base_path + 'orig/test/scene_{:02d}/rgb{}.png'
-depth_in_mpath = par.base_path + 'orig/test/scene_{:02d}/depth{}.png'
-cam_pose_mpath = par.base_path + 'orig/test/scene_{:02d}/camera_pose_{}.txt'
-obj_pose_mpath = par.base_path + 'orig/test/scene_{:02d}/{}{}_{}.txt'
-model_mpath = par.base_path + 'models/obj_{:02d}.ply'
-bbox_cens_path = par.base_path + 'bbox_cens.yml'
+rgb_in_mpath = par['base_path'] + 'orig/test/scene_{:02d}/rgb{}.png'
+depth_in_mpath = par['base_path'] + 'orig/test/scene_{:02d}/depth{}.png'
+cam_pose_mpath = par['base_path'] + 'orig/test/scene_{:02d}/camera_pose_{}.txt'
+obj_pose_mpath = par['base_path'] + 'orig/test/scene_{:02d}/{}{}_{}.txt'
+model_mpath = par['base_path'] + 'models/obj_{:02d}.ply'
+bbox_cens_path = par['base_path'] + 'bbox_cens.yml'
 
-scene_info_mpath = par.base_path + 'test/{:02d}/info.yml'
-scene_gt_mpath = par.base_path + 'test/{:02d}/gt.yml'
-rgb_out_mpath = par.base_path + 'test/{:02d}/rgb/{:04d}.png'
-depth_out_mpath = par.base_path + 'test/{:02d}/depth/{:04d}.png'
+scene_info_mpath = par['base_path'] + 'test/{:02d}/info.yml'
+scene_gt_mpath = par['base_path'] + 'test/{:02d}/gt.yml'
+rgb_out_mpath = par['base_path'] + 'test/{:02d}/rgb/{:04d}.png'
+depth_out_mpath = par['base_path'] + 'test/{:02d}/depth/{:04d}.png'
 
 # IDs and counts of objects included in the scenes
 scenes = {1: {1: 15}, 2: {2: 5}, 3: {1: 9, 2: 4}}
@@ -172,7 +173,7 @@ for scene_id in sorted(scenes.keys()):
         cam_R, cam_t = load_doumanoglou_pose(cam_pose_mpath.format(scene_id, im_id), False)
 
         scene_info[im_id_out] = {
-            'cam_K': par.cam['K'],
+            'cam_K': par['cam']['K'],
             'cam_R_w2c': cam_R,
             'cam_t_w2c': 1000.0 * cam_t # [mm]
         }
@@ -193,15 +194,15 @@ for scene_id in sorted(scenes.keys()):
                         R.dot(trans_tejani2dou[obj_id]['t'])
 
                 # Get 2D bounding box of the object model at the ground truth pose
-                obj_bb = misc.calc_pose_2d_bbox(models[obj_id], par.cam['im_size'],
-                                                par.cam['K'], R_m2c, t_m2c)
+                obj_bb = misc.calc_pose_2d_bbox(models[obj_id], par['cam']['im_size'],
+                                                par['cam']['K'], R_m2c, t_m2c)
 
                 # Visualisation
                 if False:
                     print(R_m2c)
                     print(t_m2c)
 
-                    ren_rgb = renderer.render(models[obj_id], par.cam['im_size'], par.cam['K'],
+                    ren_rgb = renderer.render(models[obj_id], par['cam']['im_size'], par['cam']['K'],
                                               R_m2c, t_m2c, mode='rgb')
                     vis_rgb = 0.4 * rgb.astype(np.float32) + 0.6 * ren_rgb.astype(np.float32)
                     vis_rgb = vis_rgb.astype(np.uint8)

@@ -57,18 +57,6 @@ def write_depth(path, im):
     with open(path, 'wb') as f:
         w_depth.write(f, np.reshape(im_uint16, (-1, im.shape[1])))
 
-def load_obj_info(path):
-    with open(path, 'r') as f:
-        info = yaml.load(f, Loader=yaml.CLoader)
-        for eid in info.keys():
-            if 'cam_K' in info[eid].keys():
-                info[eid]['cam_K'] = np.array(info[eid]['cam_K']).reshape((3, 3))
-            if 'cam_R_m2c' in info[eid].keys():
-                info[eid]['cam_R_m2c'] = np.array(info[eid]['cam_R_m2c']).reshape((3, 3))
-            if 'cam_t_m2c' in info[eid].keys():
-                info[eid]['cam_t_m2c'] = np.array(info[eid]['cam_t_m2c']).reshape((3, 1))
-    return info
-
 def load_info(path):
     with open(path, 'r') as f:
         info = yaml.load(f, Loader=yaml.CLoader)
@@ -117,11 +105,53 @@ def save_gt(path, gts):
     with open(path, 'w') as f:
         yaml.dump(gts, f, width=10000)
 
+def load_poses(path, load_run_time=False):
+    """
+    Loads 6D object poses from a file.
+
+    :param path: Path to a file with poses.
+    :param load_run_time: Indicates if to return also the run time.
+    :return: List of the loaded poses.
+    """
+    run_time = -1
+    with open(path, 'r') as f:
+        lines = f.read().splitlines()
+        poses = []
+        for line_id, line in enumerate(lines):
+            if not line.isspace():
+                elems = line.split()
+
+                # The first line contains the run time
+                if line_id == 0 and len(elems) == 1:
+                    if load_run_time:
+                        run_time = elems[0]
+                else:
+                    obj_id = int(elems[0])
+                    score = int(elems[1])
+                    R = np.array(map(float, elems[2:11])).reshape((3, 3))
+                    t = np.array(map(float, elems[11:14])).reshape((3, 1))
+                    poses.append({'obj_id': obj_id, 'score': score,
+                                  'cam_R_m2c': R, 'cam_t_m2c': t})
+    if load_run_time:
+        return poses, run_time
+    else:
+        return poses
+
+def save_poses(path, poses, run_time=-1):
+    lines = [str(run_time)] # The first line contains run time
+    line_tpl = '{}' + (' {:.8f}' * 13)
+    for p in poses:
+        Rt = p['cam_R_m2c'].flatten().tolist() + p['cam_t_m2c'].flatten().tolist()
+        line = line_tpl.format(p['obj_id'], p['score'], *Rt)
+        lines.append(line)
+    with open(path, 'w') as f:
+        f.write('\n'.join(lines) + '\n')
+
 def load_ply(path):
     """
     Loads a 3D mesh model from a PLY file.
 
-    :param path: A path to a PLY file.
+    :param path: Path to a PLY file.
     :return: The loaded model given by a dictionary with items:
     'pts' (nx3 ndarray), 'normals' (nx3 ndarray), 'colors' (nx3 ndarray),
     'faces' (mx3 ndarray) - the latter three are optional.
@@ -141,11 +171,11 @@ def load_ply(path):
     while True:
         line = f.readline().rstrip('\n').rstrip('\r') # Strip the newline character(s)
         if line.startswith('element vertex'):
-            n_pts = int(line.split(' ')[-1])
+            n_pts = int(line.split()[-1])
             header_vertex_section = True
             header_face_section = False
         elif line.startswith('element face'):
-            n_faces = int(line.split(' ')[-1])
+            n_faces = int(line.split()[-1])
             header_vertex_section = False
             header_face_section = True
         elif line.startswith('element'): # Some other element
@@ -153,9 +183,9 @@ def load_ply(path):
             header_face_section = False
         elif line.startswith('property') and header_vertex_section:
             # (name of the property, data type)
-            pt_props.append((line.split(' ')[-1], line.split(' ')[-2]))
+            pt_props.append((line.split()[-1], line.split()[-2]))
         elif line.startswith('property list') and header_face_section:
-            elems = line.split(' ')
+            elems = line.split()
             if elems[-1] == 'vertex_indices':
                 # (name of the property, data type)
                 face_props.append(('n_corners', elems[2]))
@@ -210,7 +240,7 @@ def load_ply(path):
                 if prop[0] in load_props:
                     prop_vals[prop[0]] = val
         else:
-            elems = f.readline().rstrip('\n').rstrip('\r').split(' ')
+            elems = f.readline().rstrip('\n').rstrip('\r').split()
             for prop_id, prop in enumerate(pt_props):
                 if prop[0] in load_props:
                     prop_vals[prop[0]] = elems[prop_id]
@@ -248,7 +278,7 @@ def load_ply(path):
                 else:
                     prop_vals[prop[0]] = val
         else:
-            elems = f.readline().rstrip('\n').rstrip('\r').split(' ')
+            elems = f.readline().rstrip('\n').rstrip('\r').split()
             for prop_id, prop in enumerate(face_props):
                 if prop[0] == 'n_corners':
                     if int(elems[prop_id]) != face_n_corners:
@@ -270,7 +300,7 @@ def save_ply(path, pts, pts_colors=np.array([]), pts_normals=np.array([]), faces
     """
     Saves a 3D mesh model to a PLY file.
 
-    :param path: A path to the resulting PLY file.
+    :param path: Path to the resulting PLY file.
     :param pts: nx3 ndarray
     :param pts_colors: nx3 ndarray
     :param pts_normals: nx3 ndarray

@@ -23,21 +23,24 @@ defined in OpenCV with the camera looking along the Z axis. K is provided with
 the test images.
 
 We encourage the participants to provide more estimates per file. This will
-allow us to evaluate 1) top-N recall (i.e. Is there a correct estimate among the
-N with the highest score?), and 2) 6D localization of multiple instances of a
-single object, which is one of the tasks considered for future editions of the
-challenge.
+allow to calculate not only the recall rate (i.e. the percentage of images for
+which a correct object pose is estimated), but also e.g. the precision-recall
+curve, or the top-N recall rate (i.e. the percentage of images for which a
+correct object pose is among the N estimates with the highest score).
 
 All test images are used for the evaluation, even those with multiple instances
-of the object of interest. The list of objects that are present in an image can
-be obtained from file gt.yml.
+of the object of interest. Images with multiple instances are likely to be
+easier and the number of instances can be seen as a parameter of the image that
+indicates its difficulty, similarly as the level of occlusion or the amount of
+clutter does. The list of objects that are present in an image can be obtained
+from file gt.yml.
 
 The files with results are expected in this structure:
 
 **METHOD\_DATASET[\_TESTTYPE]/ZZ/XXXX\_YY.txt**
 
 METHOD is the name of your method, DATASET is the dataset name (hinterstoisser,
-t-less, tud_light, rutgers, tejani, or doumanoglou), TESTTYPE is the data type
+tless, tudlight, rutgers, tejani, or doumanoglou), TESTTYPE is the data type
 (used only for datasets with more data types), and ZZ, XXXX, and YY is the ID of
 the test scene, the test image and the object.
 
@@ -48,10 +51,10 @@ Test image 0000 (let us consider the image from the Primesense sensor) of test
 scene 01 from the T-LESS dataset contains objects 02, 25, 29 and 30. A method
 is expected to run three times on this image and store the results in files:
 
-- mymethod_t-less_primesense/01/0000\_02.txt
-- mymethod_t-less_primesense/01/0000\_25.txt
-- mymethod_t-less_primesense/01/0000\_29.txt
-- mymethod_t-less_primesense/01/0000\_30.txt
+- mymethod_tless_primesense/01/0000\_02.txt
+- mymethod_tless_primesense/01/0000\_25.txt
+- mymethod_tless_primesense/01/0000\_29.txt
+- mymethod_tless_primesense/01/0000\_30.txt
 
 Example content of file 0000_25.txt:
 ```
@@ -81,20 +84,20 @@ format:
 SIXD challenge 2017 - documentation of results
 
 Author: ...
-Method: ... (any related publications)
+Method: ... (related publication)
 Parameter setting: ... (values of the crucial parameters of the method)
-Implementation: ... (a link to the implementation, if available)
+Implementation: ... (link to the implementation, if available)
 PC tech specs: ... (for comparison of running times)
 
 Dataset: ...
 Training input:
     3D model type: ... (none, default, for T-LESS: cad or reconst)
     Image type: ... (none, real, rendered)
-    Image modality: ... (RGB-D, RGB, D)
+    Image modalities: ... (RGB-D, RGB, D)
     Light conditions: ... (only for real images from TUD Light)
     Viewpoint sampling: ... (if other than the default training set was used)
     Image augmentation: ... (in-plane rotation, extra noise, etc.)
     Images per object: ... (including the augmented images)
 Test input:
-    Image modality: ... (RGB-D, RGB, D)
+    Image modalities: ... (RGB-D, RGB, D)
 ```

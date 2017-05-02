@@ -12,11 +12,12 @@ sys.path.append(os.path.abspath('..'))
 from pysixd import inout, misc, renderer
 
 # Dataset parameters
-from params import par_hinterstoisser as par
-# from params import par_tejani as par
-# from params import par_doumanoglou as par
-# from params import par_rutgers as par
-# from params import par_tud_light as par
+from params.dataset_params import get_dataset_params
+# par = get_dataset_params('hinterstoisser')
+# par = get_dataset_params('tejani')
+# par = get_dataset_params('doumanoglou')
+# par = get_dataset_params('rutgers')
+par = get_dataset_params('tudlight')
 
 # Select IDs of scenes, images and GT poses to be processed.
 # Empty list [] means that all IDs will be used.
@@ -41,19 +42,19 @@ vis_rgb_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.jpg'
 vis_depth_mpath = '../output/vis_gt_poses/{:02d}_{:04d}_depth_diff.jpg'
 misc.ensure_dir(os.path.dirname(vis_rgb_mpath))
 
-scene_ids_curr = range(1, par.scene_count + 1)
+scene_ids_curr = range(1, par['scene_count'] + 1)
 if scene_ids:
     scene_ids_curr = set(scene_ids_curr).intersection(scene_ids)
 for scene_id in scene_ids_curr:
     # Load scene info and gt poses
-    scene_info = inout.load_info(par.scene_info_mpath.format(scene_id))
-    scene_gt = inout.load_gt(par.scene_gt_mpath.format(scene_id))
+    scene_info = inout.load_info(par['scene_info_mpath'].format(scene_id))
+    scene_gt = inout.load_gt(par['scene_gt_mpath'].format(scene_id))
 
     # Load models of objects that appear in the current scene
     obj_ids = set([gt['obj_id'] for gts in scene_gt.values() for gt in gts])
     models = {}
     for obj_id in obj_ids:
-        models[obj_id] = inout.load_ply(par.model_mpath.format(obj_id))
+        models[obj_id] = inout.load_ply(par['model_mpath'].format(obj_id))
 
     # Visualize GT poses in the selected images
     im_ids_curr = sorted(scene_info.keys())
@@ -63,10 +64,10 @@ for scene_id in scene_ids_curr:
         print('scene: {}, im: {}'.format(scene_id, im_id))
 
         # Load the images
-        rgb = inout.read_im(par.test_rgb_mpath.format(scene_id, im_id))
-        depth = inout.read_depth(par.test_depth_mpath.format(scene_id, im_id))
+        rgb = inout.read_im(par['test_rgb_mpath'].format(scene_id, im_id))
+        depth = inout.read_depth(par['test_depth_mpath'].format(scene_id, im_id))
         depth = depth.astype(np.float) # [mm]
-        depth *= par.cam['depth_scale'] # to [mm]
+        depth *= par['cam']['depth_scale'] # to [mm]
 
         # Render the objects at the ground truth poses
         im_size = (depth.shape[1], depth.shape[0])

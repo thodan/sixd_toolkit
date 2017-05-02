@@ -8,15 +8,15 @@ import numpy as np
 
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout
-# from params import par_hinterstoisser as par
-# from params import par_tejani as par
-from params import par_doumanoglou as par
+
+from params.dataset_params import get_dataset_params
+par = get_dataset_params('hinterstoisser')
 
 # data_ids = range(1, par.obj_count + 1)
-data_ids = range(1, par.scene_count + 1)
+data_ids = range(1, par['scene_count'] + 1)
 
 # depth_mpath = par.train_depth_mpath
-depth_mpath = par.test_depth_mpath
+depth_mpath = par['test_depth_mpath']
 
 scale = 0.1
 

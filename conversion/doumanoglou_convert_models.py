@@ -8,7 +8,8 @@ import yaml
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout
 
-from params import par_doumanoglou as par
+from params.dataset_params import get_dataset_params
+par = get_dataset_params('doumanoglou')
 
 bbox_cens_path = '../output/doumanoglou_bbox_cens.yml' # File to save bbox centers
 
@@ -16,7 +17,7 @@ bbox_cens = []
 obj_ids = range(1, 3)
 for obj_id in obj_ids:
     print('Processing obj: ' + str(obj_id))
-    model_path = par.model_mpath.format(obj_id)
+    model_path = par['model_mpath'].format(obj_id)
     model = inout.load_ply(model_path)
 
     # Scale
