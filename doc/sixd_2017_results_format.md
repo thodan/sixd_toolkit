@@ -94,7 +94,6 @@ Training input:
     3D model type: ... (none, default, for T-LESS: cad or reconst)
     Image type: ... (none, real, rendered)
     Image modalities: ... (RGB-D, RGB, D)
-    Light conditions: ... (only for real images from TUD Light)
     Viewpoint sampling: ... (if other than the default training set was used)
     Image augmentation: ... (in-plane rotation, extra noise, etc.)
     Images per object: ... (including the augmented images)
