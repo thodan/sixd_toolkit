@@ -272,6 +272,21 @@ def save_vis(path, views, views_level=None):
                    pts_normals=np.array(normals),
                    pts_colors=np.array(colors))
 
+if __name__ == '__main__':
+
+    # Example of sampling views from a view sphere.
+    min_n_views = 1000
+    radius = 1
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (0, 0.5 * math.pi)
+
+    # Sample views
+    views, views_level = sample_views(min_n_views, radius, azimuth_range, elev_range)
+    print('Sampled views: ' + str(len(views)))
+
+    #out_views_vis_path = '../output/view_sphere.ply'
+    #save_vis(out_views_vis_path, views)
+
 
 # Unfinished implementation of sphere sampling used by TUD:
 #

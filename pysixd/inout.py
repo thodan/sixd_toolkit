@@ -127,7 +127,7 @@ def load_poses(path, load_run_time=False):
                         run_time = elems[0]
                 else:
                     obj_id = int(elems[0])
-                    score = int(elems[1])
+                    score = float(elems[1])
                     R = np.array(map(float, elems[2:11])).reshape((3, 3))
                     t = np.array(map(float, elems[11:14])).reshape((3, 1))
                     poses.append({'obj_id': obj_id, 'score': score,

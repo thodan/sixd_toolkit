@@ -1,6 +1,7 @@
 ### SIXD Toolkit
 
-Python scripts to facilitate participation in the SIXD Challenge.
+Python scripts to facilitate participation in the SIXD Challenge:
+http://cmp.felk.cvut.cz/sixd/challenge_2017
 
 - **conversion** - Scripts that were used to convert the datasets from the original format to the SIXD standard format.
 - **doc** - Documentation, conventions, etc.

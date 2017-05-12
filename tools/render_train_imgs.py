@@ -1,7 +1,7 @@
 # Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
 # Center for Machine Perception, Czech Technical University in Prague
 
-# Renders RGB-D images of an object model from a "uniformly" sampled view sphere.
+# Renders RGB-D images of an object model.
 
 import os
 import sys
@@ -18,10 +18,11 @@ from params.dataset_params import get_dataset_params
 # dataset = 'hinterstoisser'
 # dataset = 'tejani'
 # dataset = 'rutgers'
-dataset = 'tudlight'
+# dataset = 'tudlight'
+dataset = 'tless'
 
-par = get_dataset_params(dataset)
-
+model_type = ''
+cam_type = ''
 
 if dataset == 'hinterstoisser':
     # Range of object dist. in test images: 346.31 - 1499.84 mm - with extended GT
@@ -58,9 +59,23 @@ elif dataset == 'tudlight':
     azimuth_range = (0, 2 * math.pi)
     elev_range = (-0.4363, 0.5 * math.pi) # (-25, 90) [deg]
 
+elif dataset == 'tless':
+    # Range of object distances in test images: 649.89 - 940.04 mm
+    radii = [650] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100) # [mm]
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (-0.5 * math.pi, 0.5 * math.pi)
+
+    model_type = 'reconst'
+    cam_type = 'primesense'
+
+par = get_dataset_params(dataset, model_type=model_type, cam_type=cam_type)
+
 
 # Objects to render
-obj_ids = range(1, par['obj_count'] + 1)
+# obj_ids = range(1, par['obj_count'] + 1)
+obj_ids = range(18, par['obj_count'] + 1)
 
 # Minimum required number of views on the whole view sphere. The final number of
 # views depends on the sampling method.
@@ -130,7 +145,7 @@ for obj_id in obj_ids:
                                     view['R'], view['t'],
                                     clip_near, clip_far, mode='depth')
 
-            # Convert depth is in the same units as for test images
+            # Convert depth so it is in the same units as the real test images
             depth /= par['cam']['depth_scale']
 
             # Render RGB image

@@ -7,6 +7,7 @@ import os
 import sys
 import glob
 import yaml
+#import time
 
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout, pose_error, misc
@@ -53,19 +54,25 @@ for result_path in result_paths:
     # Select a type of the 3D object model for evaluation
     if dataset == 'tless':
         model_type = 'cad'
+        cam_type = test_type
     else:
         model_type = ''
+        cam_type = ''
 
     # Load dataset parameters
-    dp = get_dataset_params(dataset, model_type=model_type, test_type=test_type)
+    dp = get_dataset_params(dataset, model_type=model_type, test_type=test_type,
+                            cam_type=cam_type)
 
     # Load object models
-    models = {}
-    for obj_id in range(1, dp['obj_count'] + 1):
-        models[obj_id] = inout.load_ply(dp['model_mpath'].format(obj_id))
+    if pose_error_fun in ['vsd', 'add', 'adi', 'cou']:
+        print('Loading object models...')
+        models = {}
+        for obj_id in range(1, dp['obj_count'] + 1):
+            models[obj_id] = inout.load_ply(dp['model_mpath'].format(obj_id))
 
     # Directories with results for individual scenes
-    scene_dirs = glob.glob(os.path.join(result_path, '*'))
+    scene_dirs = sorted([d for d in glob.glob(os.path.join(result_path, '*'))
+                         if os.path.isdir(d)])
 
     for scene_dir in scene_dirs:
         scene_id = int(os.path.basename(scene_dir))
@@ -74,17 +81,27 @@ for result_path in result_paths:
         scene_info = inout.load_info(dp['scene_info_mpath'].format(scene_id))
         scene_gt = inout.load_gt(dp['scene_gt_mpath'].format(scene_id))
 
-        res_paths = glob.glob(os.path.join(scene_dir, '*.txt'))
+        res_paths = sorted(glob.glob(os.path.join(scene_dir, '*.txt')))
         errs = {}
+        im_id = -1
+        depth_im = None
         for res_path in res_paths:
+            #t = time.time()
+
             # Parse image ID and object ID from the file name
-            im_id, obj_id = os.path.basename(res_path).split('.')[0].split('_')
+            filename = os.path.basename(res_path).split('.')[0]
+            im_id_prev = im_id
+            im_id, obj_id = map(int, filename.split('_'))
+
+            print('Calculating {} error - scene: {}, im: {}, obj: {}'.format(
+                pose_error_fun, scene_id, im_id, obj_id))
 
             # Load depth image if VSD is used for the evaluation
             if pose_error_fun == 'vsd':
-                depth_path = dp['test_depth_mpath'].format(scene_id, im_id)
-                depth_im = inout.read_depth(depth_path)
-                depth_im *= dp['cam']['depth_scale'] # to [mm]
+                if im_id != im_id_prev:
+                    depth_path = dp['test_depth_mpath'].format(scene_id, im_id)
+                    depth_im = inout.read_depth(depth_path)
+                    depth_im *= dp['cam']['depth_scale'] # to [mm]
 
             # Load camera matrix
             if pose_error_fun in ['vsd', 'cou']:
@@ -96,8 +113,8 @@ for result_path in result_paths:
             # Load pose estimates
             ests = inout.load_poses(res_path)
 
-            # Sort the estimates by score
-            ests = sorted(ests, key=lambda x: x['score'])
+            # Sort the estimates by score (in descending order)
+            ests = sorted(ests, key=lambda x: x['score'])[::-1]
 
             # Consider only the top N estimated poses
             ests = ests[slice(0, top_n_ests)]
@@ -129,13 +146,14 @@ for result_path in result_paths:
                     elif pose_error_fun == 'te':
                         err = pose_error.te(t_est, t_gt)
 
-                    est_errs.append(err)
+                    est_errs.append(float(err))
                 errs[im_id][obj_id].append(est_errs)
+            #print('Evaluation time: {}s'.format(time.time() - t))
 
         print('Saving calculated errors...')
         errs_path = errs_mpath.format(result_path=result_path,
                                       scene_id=scene_id,
                                       eval_desc=eval_desc)
-        misc.ensure_dir(os.path.basename(errs_path))
+        misc.ensure_dir(os.path.dirname(errs_path))
         with open(errs_path, 'w') as f:
             yaml.dump(errs, f, width=10000, Dumper=yaml.CDumper)
