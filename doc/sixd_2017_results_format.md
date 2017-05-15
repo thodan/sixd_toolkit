@@ -85,18 +85,21 @@ SIXD challenge 2017 - documentation of results
 
 Author: ...
 Method: ... (related publication)
-Parameter setting: ... (values of the crucial parameters of the method)
-Implementation: ... (link to the implementation, if available)
-PC tech specs: ... (for comparison of running times)
+Parameter settings: ... (values of the crucial parameters of the method)
+Implementation: ... (link to an implementation, if available)
+PC tech specs: ... (for comparison of run times)
 
 Dataset: ...
 Training input:
     3D model type: ... (none, default, for T-LESS: cad or reconst)
     Image type: ... (none, real, rendered)
-    Image modalities: ... (RGB-D, RGB, D)
-    Viewpoint sampling: ... (if other than the default training set was used)
-    Image augmentation: ... (in-plane rotation, extra noise, etc.)
-    Images per object: ... (including the augmented images)
+    Image modalities: ... (none, RGB-D, RGB, D, grayscale)
+    Viewpoint sampling: ... (if extra images were rendered)
+    Image augmentation: ... (in-plane rotation, background, extra noise, etc.)
+    Images per object: ... (counting also the augmented images)
+    Object set: ... (specify the subset of objects whose training data was used;
+                     typical is to use training data of only the object of
+                     interest or of all objects from a dataset)
 Test input:
     Image modalities: ... (RGB-D, RGB, D)
 ```

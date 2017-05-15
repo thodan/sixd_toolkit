@@ -147,6 +147,26 @@ def save_poses(path, poses, run_time=-1):
     with open(path, 'w') as f:
         f.write('\n'.join(lines) + '\n')
 
+def load_errors_sixd2017(path):
+    errs = []
+    with open(path, 'r') as f:
+        lines = f.read().splitlines()
+        for line in lines:
+            if not line.isspace():
+                elems = line.split()
+                im_id = int(elems[0])
+                obj_id = int(elems[1])
+                est_id = int(elems[2])
+                gt_id = int(elems[3])
+                err = float(elems[4])
+                errs.append([im_id, obj_id, est_id, gt_id, err])
+    return errs
+
+def save_errors_sixd2017(path, errs):
+    with open(path, 'w') as f:
+        for err_info in errs:
+            f.write(' '.join(map(str, err_info)) + '\n')
+
 def load_ply(path):
     """
     Loads a 3D mesh model from a PLY file.

@@ -88,7 +88,7 @@ def calc_pts_diameter(pts):
     """
     diameter = -1
     for pt_id in range(pts.shape[0]):
-        if pt_id % 1000 == 0: print(pt_id)
+        #if pt_id % 1000 == 0: print(pt_id)
         pt_dup = np.tile(np.array([pts[pt_id, :]]), [pts.shape[0] - pt_id, 1])
         pts_diff = pt_dup - pts[pt_id:, :]
         max_dist = math.sqrt((pts_diff * pts_diff).sum(axis=1).max())

@@ -72,8 +72,9 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
     # Image ID format
     im_id_f = '{:' + str(p['im_id_pad']).zfill(2) + 'd}'
 
-    # Path masks
+    # Paths and path masks
     p['model_mpath'] = p['base_path'] + models_dir + '/obj_{:02d}.ply'
+    p['models_info_path'] = p['base_path'] + models_dir + '/models_info.yml'
     p['obj_info_mpath'] = p['base_path'] + train_dir + '/{:02d}/info.yml'
     p['obj_gt_mpath'] = p['base_path'] + train_dir + '/{:02d}/gt.yml'
     p['train_rgb_mpath'] = p['base_path'] + train_dir + '/{:02d}/rgb/' + im_id_f + '.png'
