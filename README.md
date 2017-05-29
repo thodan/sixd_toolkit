@@ -8,3 +8,11 @@ http://cmp.felk.cvut.cz/sixd/challenge_2017
 - **params** - Parameters of the datasets (paths etc.) used by other scripts.
 - **pysixd** - Core library that takes care of i/o operations, rendering etc.
 - **tools** - Useful scripts for work with 6DB.
+
+# Setup Python
+
+ pip install -r requirements.txt
+
+# Setup in Linux
+
+ apt-get install libglfw3
