@@ -1,6 +1,10 @@
+numpy
+matplotlib
+scipy
 pypng
-glumpy
-cython
+ruamel.yaml
 pillow
+cython
 pyopengl
-#apt-get install libglfw3
+glumpy
+opencv-python
