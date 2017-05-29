@@ -1,0 +1,6 @@
+pypng
+glumpy
+cython
+pillow
+pyopengl
+#apt-get install libglfw3
