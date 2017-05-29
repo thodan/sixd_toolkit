@@ -12,7 +12,7 @@ http://cmp.felk.cvut.cz/sixd/challenge_2017
 - **tools** - Scripts for evaluation, rendering of training images,
               visualization of 6D object poses etc.
 
-## Dependences
+## Dependencies
 
 To install the required python packages, run:
 
