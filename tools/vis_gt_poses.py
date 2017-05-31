@@ -13,11 +13,11 @@ from pysixd import inout, misc, renderer
 from params.dataset_params import get_dataset_params
 
 # dataset = 'hinterstoisser'
-# dataset = 'tless'
+dataset = 'tless'
 # dataset = 'tudlight'
 # dataset = 'rutgers'
 # dataset = 'tejani'
-dataset = 'doumanoglou'
+# dataset = 'doumanoglou'
 
 # Dataset parameters
 par = get_dataset_params(dataset)
@@ -41,8 +41,8 @@ vis_rgb_resolve_visib = True
 vis_depth = True
 
 # Path masks for output images
-vis_rgb_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.jpg'
-vis_depth_mpath = '../output/vis_gt_poses/{:02d}_{:04d}_depth_diff.jpg'
+vis_rgb_mpath = '../output/vis_gt_poses_{}/{:02d}_{:04d}.jpg'
+vis_depth_mpath = '../output/vis_gt_poses_{}/{:02d}_{:04d}_depth_diff.jpg'
 misc.ensure_dir(os.path.dirname(vis_rgb_mpath))
 
 scene_ids_curr = range(1, par['scene_count'] + 1)
@@ -112,7 +112,7 @@ for scene_id in scene_ids_curr:
         if vis_rgb:
             vis_im_rgb = 0.4 * rgb.astype(np.float) + 0.6 * ren_rgb
             vis_im_rgb[vis_im_rgb > 255] = 255
-            inout.save_im(vis_rgb_mpath.format(scene_id, im_id),
+            inout.save_im(vis_rgb_mpath.format(dataset, scene_id, im_id),
                           vis_im_rgb.astype(np.uint8))
 
         # Save image of depth differences
@@ -126,6 +126,6 @@ for scene_id in scene_ids_curr:
             plt.axis('off')
             plt.title('measured - GT depth [mm]')
             plt.colorbar()
-            plt.savefig(vis_depth_mpath.format(scene_id, im_id), pad=0,
+            plt.savefig(vis_depth_mpath.format(dataset, scene_id, im_id), pad=0,
                         bbox_inches='tight')
             plt.close()

@@ -75,7 +75,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['obj_count'] = 2
         p['scene_count'] = 3
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'others/imperial/doumanoglou_scenario_2/after_refinement/'
+        p['base_path'] = common_base_path + 'doumanoglou/'
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
