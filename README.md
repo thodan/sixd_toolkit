@@ -43,7 +43,7 @@ To use a different backend library, see the first lines of
 [this format](https://github.com/thodan/sixd_toolkit/blob/master/doc/sixd_2017_results_format.md).
 2. Run **tools/eval_calc_errors.py** to calculate errors of the pose estimates
 (fill list **result_paths** in the script with paths to the results first).
-3. Run **tools/eval_loc.py** to calculate performance score in the
+3. Run **tools/eval_loc.py** to calculate performance scores in the
 6D localization task (fill list **error_paths** in the script with paths to the
 calculated errors first).
 
