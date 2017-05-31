@@ -96,4 +96,4 @@ for scene_id in range(1, dp['scene_count'] + 1):
 
     res_path = dp['scene_gt_visib_mpath'].format(scene_id, delta)
     misc.ensure_dir(os.path.dirname(res_path))
-    #inout.save_yaml(res_path, visib_fracts)
+    inout.save_yaml(res_path, visib_fracts)
