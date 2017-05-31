@@ -8,29 +8,19 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
     p = {'name': name, 'model_type': model_type,
          'train_type': train_type, 'test_type': test_type, 'cam_type': cam_type}
 
+    # Folder with datasets
+    common_base_path = '/local/datasets/tlod/'
+    # common_base_path = '/datagrid/6DB/datasets_private/'
+
+    # Path to the T-LESS Toolkit (https://github.com/thodan/t-less_toolkit)
+    tless_tk_path = '/home/tom/th_data/cmp/projects/t-less/t-less_toolkit/'
+    # tless_tk_path = '/home.dokt/hodanto2/projects/sixd/t-less_toolkit/'
+
     if name == 'hinterstoisser':
         p['obj_count'] = 3
         p['scene_count'] = 3
         p['test_im_size'] = (640, 480)
-        p['base_path'] = '/local/datasets/tlod/hinterstoisser/'
-        p['im_id_pad'] = 4
-        p['model_texture_mpath'] = None
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
-
-    elif name == 'rutgers':
-        p['obj_count'] = 14
-        p['scene_count'] = 14
-        p['test_im_size'] = (640, 480)
-        p['base_path'] = '/local/datasets/tlod/rutgers/'
-        p['im_id_pad'] = 4
-        p['model_texture_mpath'] = p['base_path'] + 'models/obj_{:02d}.png'
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
-
-    elif name == 'tejani':
-        p['obj_count'] = 6
-        p['scene_count'] = 6
-        p['test_im_size'] = (640, 480)
-        p['base_path'] = '/local/datasets/tlod/imperial/tejani/'
+        p['base_path'] = common_base_path + 'hinterstoisser/'
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
@@ -39,7 +29,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['obj_count'] = 30
         p['scene_count'] = 20
 
-        p['base_path'] = '/local/datasets/tlod/t-less/t-less_v2/'
+        p['base_path'] = common_base_path + 't-less/t-less_v2/'
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
 
@@ -48,9 +38,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         if p['test_type'] == '': p['test_type'] = 'primesense'
         if p['cam_type'] == '': p['cam_type'] = 'primesense'
 
-        p['cam_params_path'] = '/home/tom/th_data/cmp/projects/t-less/' \
-                               't-less_toolkit/cam/camera_' + p['cam_type'] + '.yml'
-
+        p['cam_params_path'] = tless_tk_path + 'cam/camera_' +p['cam_type'] + '.yml'
         if p['test_type'] in ['primesense', 'kinect']:
             p['test_im_size'] = (720, 540)
         elif p['test_type'] == 'canon':
@@ -60,8 +48,35 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['obj_count'] = 3
         p['scene_count'] = 3
         p['test_im_size'] = (640, 480)
-        p['base_path'] = '/local/datasets/tlod/dresden/tudlight/'
+        p['base_path'] = common_base_path + 'tudlight/'
         p['im_id_pad'] = 5
+        p['model_texture_mpath'] = None
+        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+
+    elif name == 'rutgers':
+        p['obj_count'] = 14
+        p['scene_count'] = 14
+        p['test_im_size'] = (640, 480)
+        p['base_path'] = common_base_path + 'rutgers/'
+        p['im_id_pad'] = 4
+        p['model_texture_mpath'] = p['base_path'] + 'models/obj_{:02d}.png'
+        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+
+    elif name == 'tejani':
+        p['obj_count'] = 6
+        p['scene_count'] = 6
+        p['test_im_size'] = (640, 480)
+        p['base_path'] = common_base_path + 'tejani/'
+        p['im_id_pad'] = 4
+        p['model_texture_mpath'] = None
+        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+
+    elif name == 'doumanoglou':
+        p['obj_count'] = 2
+        p['scene_count'] = 3
+        p['test_im_size'] = (640, 480)
+        p['base_path'] = common_base_path + 'others/imperial/doumanoglou_scenario_2/after_refinement/'
+        p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
 
@@ -82,6 +97,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
 
     p['scene_info_mpath'] = p['base_path'] + test_dir + '/{:02d}/info.yml'
     p['scene_gt_mpath'] = p['base_path'] + test_dir + '/{:02d}/gt.yml'
+    p['scene_gt_visib_mpath'] = p['base_path'] + test_dir + '_gt_visib/{:02d}_delta={}.yml'
     p['test_rgb_mpath'] = p['base_path'] + test_dir + '/{:02d}/rgb/' + im_id_f + '.png'
     p['test_depth_mpath'] = p['base_path'] + test_dir + '/{:02d}/depth/' + im_id_f + '.png'
 

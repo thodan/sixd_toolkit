@@ -6,9 +6,9 @@
 import os
 import sys
 import math
-import yaml
 import numpy as np
 import cv2
+# import scipy.misc
 
 sys.path.append(os.path.abspath('..'))
 from pysixd import view_sampler, inout, misc, renderer
@@ -16,10 +16,11 @@ from pysixd import view_sampler, inout, misc, renderer
 from params.dataset_params import get_dataset_params
 
 # dataset = 'hinterstoisser'
-# dataset = 'tejani'
-# dataset = 'rutgers'
-# dataset = 'tudlight'
 dataset = 'tless'
+# dataset = 'tudlight'
+# dataset = 'rutgers'
+# dataset = 'tejani'
+# dataset = 'doumanoglou'
 
 model_type = ''
 cam_type = ''
@@ -72,10 +73,8 @@ elif dataset == 'tless':
 
 par = get_dataset_params(dataset, model_type=model_type, cam_type=cam_type)
 
-
 # Objects to render
-# obj_ids = range(1, par['obj_count'] + 1)
-obj_ids = range(18, par['obj_count'] + 1)
+obj_ids = range(1, par['obj_count'] + 1)
 
 # Minimum required number of views on the whole view sphere. The final number of
 # views depends on the sampling method.
@@ -118,8 +117,7 @@ for obj_id in obj_ids:
     # Load model texture
     if par['model_texture_mpath']:
         model_texture_path = par['model_texture_mpath'].format(obj_id)
-        model_texture = cv2.imread(model_texture_path)
-        model_texture = cv2.cvtColor(model_texture, cv2.COLOR_RGB2BGR)
+        model_texture = inout.load_im(model_texture_path)
     else:
         model_texture = None
 
@@ -153,11 +151,15 @@ for obj_id in obj_ids:
                                   clip_near, clip_far, texture=model_texture,
                                   ambient_weight=ambient_weight, shading=shading,
                                   mode='rgb')
+
+            # The OpenCV function was used for rendering of the training images
+            # provided for the SIXD Challenge 2017.
             rgb = cv2.resize(rgb, par['cam']['im_size'], interpolation=cv2.INTER_AREA)
+            #rgb = scipy.misc.imresize(rgb, par['cam']['im_size'][::-1], 'bicubic')
 
             # Save the rendered images
-            inout.write_im(out_rgb_mpath.format(obj_id, im_id), rgb)
-            inout.write_depth(out_depth_mpath.format(obj_id, im_id), depth)
+            inout.save_im(out_rgb_mpath.format(obj_id, im_id), rgb)
+            inout.save_depth(out_depth_mpath.format(obj_id, im_id), depth)
 
             # Get 2D bounding box of the object model at the ground truth pose
             ys, xs = np.nonzero(depth > 0)
@@ -178,14 +180,6 @@ for obj_id in obj_ids:
 
             im_id += 1
 
-    def float_representer(dumper, value):
-        text = '{0:.8f}'.format(value)
-        return dumper.represent_scalar(u'tag:yaml.org,2002:float', text)
-    yaml.add_representer(float, float_representer)
-
-    # Store metadata
-    with open(out_obj_info_path.format(obj_id), 'w') as f:
-        yaml.dump(obj_info, f, width=10000)
-
-    with open(out_obj_gt_path.format(obj_id), 'w') as f:
-        yaml.dump(obj_gt, f, width=10000)
+    # Save metadata
+    inout.save_yaml(out_obj_info_path.format(obj_id), obj_info)
+    inout.save_yaml(out_obj_gt_path.format(obj_id), obj_gt)

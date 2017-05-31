@@ -112,7 +112,7 @@ for obj_name in sorted(obj_names_id_map.keys()):
 
             # Visualisation
             if False:
-                rgb = inout.read_im(rgb_mpath.format(im_id, im_id))
+                rgb = inout.load_im(rgb_mpath.format(im_id, im_id))
                 ren_rgb = renderer.render(model, par['cam']['im_size'], par['cam']['K'], R_m2c, t_m2c, mode='rgb')
                 vis_rgb = 0.4 * rgb.astype(np.float32) + 0.6 * ren_rgb.astype(np.float32)
                 vis_rgb = vis_rgb.astype(np.uint8)

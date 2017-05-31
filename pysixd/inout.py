@@ -5,8 +5,9 @@ import struct
 import itertools
 import numpy as np
 import scipy.misc
-import yaml
 import png
+import ruamel.yaml as yaml
+# import yaml
 
 # Set representation of the floating point numbers in YAML files
 def float_representer(dumper, value):
@@ -14,9 +15,18 @@ def float_representer(dumper, value):
     return dumper.represent_scalar(u'tag:yaml.org,2002:float', text)
 yaml.add_representer(float, float_representer)
 
+def load_yaml(path):
+    with open(path, 'r') as f:
+        content = yaml.load(f, Loader=yaml.CLoader)
+        return content
+
+def save_yaml(path, content):
+    with open(path, 'w') as f:
+        yaml.dump(content, f, Dumper=yaml.CDumper, width=10000)
+
 def load_cam_params(path):
     with open(path, 'r') as f:
-        c = yaml.load(f)
+        c = yaml.load(f, Loader=yaml.CLoader)
     cam = {
         'im_size': (c['width'], c['height']),
         'K': np.array([[c['fx'], 0.0, c['cx']],
@@ -27,7 +37,7 @@ def load_cam_params(path):
         cam['depth_scale'] = float(c['depth_scale'])
     return cam
 
-def read_im(path):
+def load_im(path):
     im = scipy.misc.imread(path)
 
     # Using PyPNG
@@ -36,7 +46,7 @@ def read_im(path):
 
     return im
 
-def write_im(path, im):
+def save_im(path, im):
     scipy.misc.imsave(path, im)
 
     # Using PyPNG (for RGB)
@@ -44,13 +54,13 @@ def write_im(path, im):
     # with open(path, 'wb') as f:
     #     w_rgb.write(f, np.reshape(im, (-1, 3 * im.shape[1])))
 
-def read_depth(path):
+def load_depth(path):
     # PyPNG library is used since it allows to save 16-bit PNG
     r = png.Reader(filename=path)
     im = np.vstack(itertools.imap(np.uint16, r.asDirect()[2])).astype(np.float32)
     return im
 
-def write_depth(path, im):
+def save_depth(path, im):
     # PyPNG library is used since it allows to save 16-bit PNG
     w_depth = png.Writer(im.shape[1], im.shape[0], greyscale=True, bitdepth=16)
     im_uint16 = np.round(im).astype(np.uint16)
@@ -79,7 +89,7 @@ def save_info(path, info):
         if 'cam_t_w2c' in im_info.keys():
             im_info['cam_t_w2c'] = im_info['cam_t_w2c'].flatten().tolist()
     with open(path, 'w') as f:
-        yaml.dump(info, f, width=10000)
+        yaml.dump(info, f, Dumper=yaml.CDumper, width=10000)
 
 def load_gt(path):
     with open(path, 'r') as f:
@@ -103,69 +113,53 @@ def save_gt(path, gts):
             if 'obj_bb' in gt.keys():
                 gt['obj_bb'] = [int(x) for x in gt['obj_bb']]
     with open(path, 'w') as f:
-        yaml.dump(gts, f, width=10000)
+        yaml.dump(gts, f, Dumper=yaml.CDumper, width=10000)
 
-def load_poses(path, load_run_time=False):
+def load_results_sixd17(path):
     """
-    Loads 6D object poses from a file.
+    Loads 6D object pose estimates from a file.
 
     :param path: Path to a file with poses.
-    :param load_run_time: Indicates if to return also the run time.
     :return: List of the loaded poses.
     """
-    run_time = -1
     with open(path, 'r') as f:
-        lines = f.read().splitlines()
-        poses = []
-        for line_id, line in enumerate(lines):
-            if not line.isspace():
-                elems = line.split()
+        res = yaml.load(f, Loader=yaml.CLoader)
+        for est in res['ests']:
+            est['R'] = np.array(est['R']).reshape((3, 3))
+            est['t'] = np.array(est['t']).reshape((3, 1))
+    return res
 
-                # The first line contains the run time
-                if line_id == 0 and len(elems) == 1:
-                    if load_run_time:
-                        run_time = elems[0]
-                else:
-                    obj_id = int(elems[0])
-                    score = float(elems[1])
-                    R = np.array(map(float, elems[2:11])).reshape((3, 3))
-                    t = np.array(map(float, elems[11:14])).reshape((3, 1))
-                    poses.append({'obj_id': obj_id, 'score': score,
-                                  'cam_R_m2c': R, 'cam_t_m2c': t})
-    if load_run_time:
-        return poses, run_time
-    else:
-        return poses
-
-def save_poses(path, poses, run_time=-1):
-    lines = [str(run_time)] # The first line contains run time
-    line_tpl = '{}' + (' {:.8f}' * 13)
-    for p in poses:
-        Rt = p['cam_R_m2c'].flatten().tolist() + p['cam_t_m2c'].flatten().tolist()
-        line = line_tpl.format(p['obj_id'], p['score'], *Rt)
-        lines.append(line)
+def save_results_sixd17(path, res, run_time=-1):
+    txt = 'run_time: ' + str(run_time) + '\n' # The first line contains run time
+    txt += 'ests:\n'
+    line_tpl = '- {{score: {:.8f}, ' \
+                   'R: [' + ', '.join(['{:.8f}'] * 9) + '], ' \
+                   't: [' + ', '.join(['{:.8f}'] * 3) + ']}}\n'
+    for e in res['ests']:
+        Rt = e['R'].flatten().tolist() + e['t'].flatten().tolist()
+        txt += line_tpl.format(e['score'], *Rt)
     with open(path, 'w') as f:
-        f.write('\n'.join(lines) + '\n')
+        f.write(txt)
 
-def load_errors_sixd2017(path):
-    errs = []
+def load_errors(path):
     with open(path, 'r') as f:
-        lines = f.read().splitlines()
-        for line in lines:
-            if not line.isspace():
-                elems = line.split()
-                im_id = int(elems[0])
-                obj_id = int(elems[1])
-                est_id = int(elems[2])
-                gt_id = int(elems[3])
-                err = float(elems[4])
-                errs.append([im_id, obj_id, est_id, gt_id, err])
-    return errs
+        errors = yaml.load(f, Loader=yaml.CLoader)
+    return errors
 
-def save_errors_sixd2017(path, errs):
+def save_errors(path, errors):
     with open(path, 'w') as f:
-        for err_info in errs:
-            f.write(' '.join(map(str, err_info)) + '\n')
+        line_tpl = '- {{im_id: {:d}, obj_id: {:d}, est_id: {:d}, ' \
+                       'score: {:.8f}, errors: {}}}\n'
+        error_tpl = '{:d}: {:.8f}'
+        txt = ''
+        for e in errors:
+            txt_errors_elems = []
+            for gt_id, error in e['errors'].items():
+                txt_errors_elems.append(error_tpl.format(gt_id, error))
+            txt_errors = '{' + ', '.join(txt_errors_elems) + '}'
+            txt += line_tpl.format(e['im_id'], e['obj_id'], e['est_id'],
+                                   e['score'], txt_errors)
+        f.write(txt)
 
 def load_ply(path):
     """

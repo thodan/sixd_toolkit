@@ -12,33 +12,36 @@ sys.path.append(os.path.abspath('..'))
 from pysixd import inout, pose_error, misc
 from params.dataset_params import get_dataset_params
 
-# Paths
-#-------------------------------------------------------------------------------
 # Results for which the errors will be calculated
+#-------------------------------------------------------------------------------
 result_base = '/home/tom/th_data/cmp/projects/sixd/sixd_results/'
+# result_base = '/datagrid/6DB/sixd_results/'
 result_paths = [
     result_base + 'hodan-iros15-forwacv17_tless_primesense'
 ]
 
+# Other paths
+#-------------------------------------------------------------------------------
 # Mask of path to the output file with calculated errors
-errs_mpath = '{result_path}_eval/{scene_id:02d}_{err_desc}.txt'
+errors_mpath = '{result_path}_eval/{error_sign}/errors_{scene_id:02d}.yml'
 
 # Parameters
 #-------------------------------------------------------------------------------
-# Top N pose estimates (according to their score) to be evaluated for each
+# Top N pose estimates (with the highest score) to be evaluated for each
 # object in each image
-top_n_ests = 1 # None to consider all estimates
+n_top = 1 # 0 = all estimates, -1 = given by the number of GT poses
 
 # Pose error function
 error_type = 'vsd' # 'vsd', 'adi', 'add', 'cou', 're', 'te'
 
 # VSD parameters
-delta = 15
-tau = 20
+vsd_delta = 15
+vsd_tau = 20
 
-err_desc = 'error=' + error_type
+# Error signature
+error_sign = 'error=' + error_type + '_ntop=' + str(n_top)
 if error_type == 'vsd':
-    err_desc += '-delta=' + str(delta) + '-tau=' + str(tau)
+    error_sign += '_delta=' + str(vsd_delta) + '_tau=' + str(vsd_tau)
 
 # Error calculation
 #-------------------------------------------------------------------------------
@@ -48,10 +51,13 @@ for result_path in result_paths:
     dataset = info[1]
     test_type = info[2] if len(info) > 2 else ''
 
-    # Select a type of the 3D object model
+    # Select data type
     if dataset == 'tless':
-        model_type = 'cad'
         cam_type = test_type
+        if error_type in ['adi', 'add']:
+            model_type = 'cad_subdivided'
+        else:
+            model_type = 'cad'
     else:
         model_type = ''
         cam_type = ''
@@ -78,11 +84,11 @@ for result_path in result_paths:
         scene_info = inout.load_info(dp['scene_info_mpath'].format(scene_id))
         scene_gt = inout.load_gt(dp['scene_gt_mpath'].format(scene_id))
 
-        res_paths = sorted(glob.glob(os.path.join(scene_dir, '*.txt')))
+        res_paths = sorted(glob.glob(os.path.join(scene_dir, '*.yml')))
         errs = []
         im_id = -1
         depth_im = None
-        for res_path in res_paths:
+        for res_id, res_path in enumerate(res_paths):
             #t = time.time()
 
             # Parse image ID and object ID from the file name
@@ -90,65 +96,86 @@ for result_path in result_paths:
             im_id_prev = im_id
             im_id, obj_id = map(int, filename.split('_'))
 
-            print('Calculating {} error - scene: {}, im: {}, obj: {}'.format(
-                error_type, scene_id, im_id, obj_id))
+            if res_id % 10 == 0:
+                print('Calculating error: {}, {}, {}, {}, {}, {}, {}'.format(
+                    error_type, method, dataset, test_type, scene_id,
+                    im_id, obj_id))
 
             # Load depth image if VSD is selected
-            if error_type == 'vsd':
-                if im_id != im_id_prev:
-                    depth_path = dp['test_depth_mpath'].format(scene_id, im_id)
-                    depth_im = inout.read_depth(depth_path)
-                    depth_im *= dp['cam']['depth_scale'] # to [mm]
+            if error_type == 'vsd' and im_id != im_id_prev:
+                depth_path = dp['test_depth_mpath'].format(scene_id, im_id)
+                depth_im = inout.load_depth(depth_path)
+                depth_im *= dp['cam']['depth_scale'] # to [mm]
 
             # Load camera matrix
             if error_type in ['vsd', 'cou']:
                 K = scene_info[im_id]['cam_K']
 
             # Load pose estimates
-            ests = inout.load_poses(res_path)
+            res = inout.load_results_sixd17(res_path)
+            ests = res['ests']
 
             # Sort the estimates by score (in descending order)
             ests_sorted = sorted(enumerate(ests), key=lambda x: x[1]['score'],
                                  reverse=True)
 
-            # Consider only the top N estimated poses
-            ests_sorted = ests_sorted[slice(0, top_n_ests)]
+            # Select the required number of top estimated poses
+            if n_top == 0: # All estimates are considered
+                n_top_curr = None
+            elif n_top == -1: # Given by the number of GT poses
+                n_gt = sum([gt['obj_id'] == obj_id for gt in scene_gt[im_id]])
+                n_top_curr = n_gt
+            else:
+                n_top_curr = n_top
+            ests_sorted = ests_sorted[slice(0, n_top_curr)]
 
-            model = models[obj_id]
             for est_id, est in ests_sorted:
                 est_errs = []
-                R_est = est['cam_R_m2c']
-                t_est = est['cam_t_m2c']
+                R_e = est['R']
+                t_e = est['t']
 
+                errs_gts = {} # Errors w.r.t. GT poses of the same object
                 for gt_id, gt in enumerate(scene_gt[im_id]):
                     if gt['obj_id'] != obj_id:
                         continue
 
-                    err = -1.0
-                    R_gt = gt['cam_R_m2c']
-                    t_gt = gt['cam_t_m2c']
+                    e = -1.0
+                    R_g = gt['cam_R_m2c']
+                    t_g = gt['cam_t_m2c']
 
                     if error_type == 'vsd':
-                        err = pose_error.vsd(R_est, t_est, R_gt, t_gt, model,
-                                             depth_im, delta, tau, K)
+                        e = pose_error.vsd(R_e, t_e, R_g, t_g, models[obj_id],
+                                           depth_im, vsd_delta, vsd_tau, K)
                     elif error_type == 'add':
-                        err = pose_error.add(R_est, t_est, R_gt, t_gt, model)
+                        e = pose_error.add(R_e, t_e, R_g, t_g, models[obj_id])
                     elif error_type == 'adi':
-                        err = pose_error.adi(R_est, t_est, R_gt, t_gt, model)
+                        e = pose_error.adi(R_e, t_e, R_g, t_g, models[obj_id])
                     elif error_type == 'cou':
-                        err = pose_error.cou(R_est, t_est, R_gt, t_gt, model,
-                                             dp['test_im_size'], K)
+                        e = pose_error.cou(R_e, t_e, R_g, t_g, models[obj_id],
+                                           dp['test_im_size'], K)
                     elif error_type == 're':
-                        err = pose_error.re(R_est, R_gt)
+                        e = pose_error.re(R_e, R_g)
                     elif error_type == 'te':
-                        err = pose_error.te(t_est, t_gt)
+                        e = pose_error.te(t_e, t_g)
 
-                    errs.append([im_id, obj_id, est_id, gt_id, err])
+                    errs_gts[gt_id] = e
+
+                errs.append({
+                    'im_id': im_id,
+                    'obj_id': obj_id,
+                    'est_id': est_id,
+                    'score': est['score'],
+                    'errors': errs_gts
+                })
             #print('Evaluation time: {}s'.format(time.time() - t))
 
-        print('Saving calculated errors...')
-        errs_path = errs_mpath.format(result_path=result_path,
-                                      scene_id=scene_id,
-                                      err_desc=err_desc)
-        misc.ensure_dir(os.path.dirname(errs_path))
-        inout.save_errors_sixd2017(errs_path, errs)
+        print('Saving errors...')
+        errors_path = errors_mpath.format(result_path=result_path,
+                                          error_sign=error_sign,
+                                          scene_id = scene_id)
+
+        misc.ensure_dir(os.path.dirname(errors_path))
+        inout.save_errors(errors_path, errs)
+
+    print('')
+print('Done.')

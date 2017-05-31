@@ -25,7 +25,7 @@ for data_id in data_ids:
     depth_paths = sorted(glob.glob(os.path.join(
         os.path.dirname(depth_mpath.format(data_id, 0)), '*')))
     for depth_path in depth_paths:
-        d = inout.read_depth(depth_path)
+        d = inout.load_depth(depth_path)
         d *= scale
         d = np.round(d).astype(np.uint16)
-        inout.write_depth(depth_path, d)
+        inout.save_depth(depth_path, d)

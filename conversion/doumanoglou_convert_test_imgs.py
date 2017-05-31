@@ -160,14 +160,14 @@ for scene_id in sorted(scenes.keys()):
         print('scene, view: ' + str(scene_id) + ', ' + str(im_id))
 
         # Load the RGB and depth image
-        rgb = inout.read_im(rgb_in_mpath.format(scene_id, im_id))
-        depth = inout.read_depth(depth_in_mpath.format(scene_id, im_id))
+        rgb = inout.load_im(rgb_in_mpath.format(scene_id, im_id))
+        depth = inout.load_depth(depth_in_mpath.format(scene_id, im_id))
 
         depth *= 10.0  # Convert depth map to [100um]
 
         # Save the RGB and depth image
-        inout.write_im(rgb_out_mpath.format(scene_id, im_id_out), rgb)
-        inout.write_depth(depth_out_mpath.format(scene_id, im_id_out), depth)
+        inout.save_im(rgb_out_mpath.format(scene_id, im_id_out), rgb)
+        inout.save_depth(depth_out_mpath.format(scene_id, im_id_out), depth)
 
         # Load the camera pose
         cam_R, cam_t = load_doumanoglou_pose(cam_pose_mpath.format(scene_id, im_id), False)

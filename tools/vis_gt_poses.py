@@ -10,14 +10,17 @@ import matplotlib.pyplot as plt
 
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout, misc, renderer
+from params.dataset_params import get_dataset_params
+
+# dataset = 'hinterstoisser'
+# dataset = 'tless'
+# dataset = 'tudlight'
+# dataset = 'rutgers'
+# dataset = 'tejani'
+dataset = 'doumanoglou'
 
 # Dataset parameters
-from params.dataset_params import get_dataset_params
-# par = get_dataset_params('hinterstoisser')
-# par = get_dataset_params('tejani')
-# par = get_dataset_params('doumanoglou')
-# par = get_dataset_params('rutgers')
-par = get_dataset_params('tudlight')
+par = get_dataset_params(dataset)
 
 # Select IDs of scenes, images and GT poses to be processed.
 # Empty list [] means that all IDs will be used.
@@ -32,10 +35,10 @@ vis_rgb = True
 # depth renderings). If True, only the part of object surface, which is not
 # occluded by any other modeled object, is visible. If False, RGB renderings
 # of individual objects are blended together.
-vis_rgb_resolve_visib = False
+vis_rgb_resolve_visib = True
 
 # Indicates whether to render depth image
-vis_depth = False
+vis_depth = True
 
 # Path masks for output images
 vis_rgb_mpath = '../output/vis_gt_poses/{:02d}_{:04d}.jpg'
@@ -64,8 +67,8 @@ for scene_id in scene_ids_curr:
         print('scene: {}, im: {}'.format(scene_id, im_id))
 
         # Load the images
-        rgb = inout.read_im(par['test_rgb_mpath'].format(scene_id, im_id))
-        depth = inout.read_depth(par['test_depth_mpath'].format(scene_id, im_id))
+        rgb = inout.load_im(par['test_rgb_mpath'].format(scene_id, im_id))
+        depth = inout.load_depth(par['test_depth_mpath'].format(scene_id, im_id))
         depth = depth.astype(np.float) # [mm]
         depth *= par['cam']['depth_scale'] # to [mm]
 
@@ -109,8 +112,8 @@ for scene_id in scene_ids_curr:
         if vis_rgb:
             vis_im_rgb = 0.4 * rgb.astype(np.float) + 0.6 * ren_rgb
             vis_im_rgb[vis_im_rgb > 255] = 255
-            inout.write_im(vis_rgb_mpath.format(scene_id, im_id),
-                           vis_im_rgb.astype(np.uint8))
+            inout.save_im(vis_rgb_mpath.format(scene_id, im_id),
+                          vis_im_rgb.astype(np.uint8))
 
         # Save image of depth differences
         if vis_depth:

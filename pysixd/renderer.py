@@ -4,13 +4,12 @@
 # Renders rgb/depth image of a 3D mesh model.
 
 import numpy as np
-import scipy.misc
-from glumpy import app, gloo, gl, data
+from glumpy import app, gloo, gl
 
 # Set backend (http://glumpy.readthedocs.io/en/latest/api/app-backends.html)
 app.use('glfw')
-# app.use('pyglet')
-# app.use('freeglut')
+# app.use('qt5')
+# app.use('pyside')
 
 # Set logging level
 from glumpy.log import log
