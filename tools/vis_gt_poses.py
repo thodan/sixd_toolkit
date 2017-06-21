@@ -7,6 +7,7 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
 sys.path.append(os.path.abspath('..'))
 from pysixd import inout, misc, renderer
@@ -38,17 +39,21 @@ vis_rgb = True
 vis_rgb_resolve_visib = True
 
 # Indicates whether to render depth image
-vis_depth = True
+vis_depth = False
+
+# Define colors
+colors = inout.load_yaml('../data/colors.yml')
 
 # Path masks for output images
-vis_rgb_mpath = '../output/vis_gt_poses_{}/{:02d}_{:04d}.jpg'
-vis_depth_mpath = '../output/vis_gt_poses_{}/{:02d}_{:04d}_depth_diff.jpg'
-misc.ensure_dir(os.path.dirname(vis_rgb_mpath))
+vis_rgb_mpath = '../output/vis_gt_poses_{}/{:02d}/{:04d}.jpg'
+vis_depth_mpath = '../output/vis_gt_poses_{}/{:02d}/{:04d}_depth_diff.jpg'
 
 scene_ids_curr = range(1, par['scene_count'] + 1)
 if scene_ids:
     scene_ids_curr = set(scene_ids_curr).intersection(scene_ids)
 for scene_id in scene_ids_curr:
+    misc.ensure_dir(os.path.dirname(vis_rgb_mpath.format(dataset, scene_id, 0)))
+
     # Load scene info and gt poses
     scene_info = inout.load_info(par['scene_info_mpath'].format(scene_id))
     scene_gt = inout.load_gt(par['scene_gt_mpath'].format(scene_id))
@@ -69,19 +74,23 @@ for scene_id in scene_ids_curr:
         # Load the images
         rgb = inout.load_im(par['test_rgb_mpath'].format(scene_id, im_id))
         depth = inout.load_depth(par['test_depth_mpath'].format(scene_id, im_id))
-        depth = depth.astype(np.float) # [mm]
+        depth = depth.astype(np.float32) # [mm]
         depth *= par['cam']['depth_scale'] # to [mm]
 
         # Render the objects at the ground truth poses
         im_size = (depth.shape[1], depth.shape[0])
-        ren_rgb = np.zeros(rgb.shape, np.float)
-        ren_depth = np.zeros(depth.shape, np.float)
+        ren_rgb = np.zeros(rgb.shape, np.float32)
+        ren_rgb_info = np.zeros(rgb.shape, np.uint8)
+        ren_depth = np.zeros(depth.shape, np.float32)
 
         gt_ids_curr = range(len(scene_gt[im_id]))
         if gt_ids:
             gt_ids_curr = set(gt_ids_curr).intersection(gt_ids)
         for gt_id in gt_ids_curr:
             gt = scene_gt[im_id][gt_id]
+            obj_id = gt['obj_id']
+            color = tuple(colors[(obj_id - 1) % len(colors)])
+            color_uint8 = tuple([int(255 * c) for c in color])
 
             model = models[gt['obj_id']]
             K = scene_info[im_id]['cam_K']
@@ -90,7 +99,9 @@ for scene_id in scene_ids_curr:
 
             # Rendering
             if vis_rgb:
-                m_rgb = renderer.render(model, im_size, K, R, t, mode='rgb')
+                m_rgb = renderer.render(model, im_size, K, R, t, mode='rgb',
+                                        surf_color=color)
+
             if vis_depth or (vis_rgb and vis_rgb_resolve_visib):
                 m_depth = renderer.render(model, im_size, K, R, t, mode='depth')
 
@@ -108,9 +119,29 @@ for scene_id in scene_ids_curr:
                 else:
                     ren_rgb += m_rgb.astype(ren_rgb.dtype)
 
+                # Draw 2D bounding box and info
+                if True:
+                    obj_mask = np.sum(m_rgb > 0, axis=2)
+                    ys, xs = obj_mask.nonzero()
+                    if len(ys):
+                        # bbox = misc.calc_2d_bbox(xs, ys, im_size)
+                        # im_size = (obj_mask.shape[1], obj_mask.shape[0])
+                        # ren_rgb_bbs = misc.draw_rect(ren_rgb_bbs, bbox, color_uint8)
+
+                        txt = '{},{}'.format(obj_id, gt_id)
+                        txt_offset = 0
+                        # txt_offset = 5
+                        p_id = np.argmin(ys)
+                        tex_loc = (xs[p_id], ys[p_id] - 5)
+                        # tex_loc = (bbox[0], bbox[1])
+                        cv2.putText(ren_rgb_info, txt, tex_loc,
+                                    cv2.FONT_HERSHEY_PLAIN, 0.9, color_uint8, 1)
+
         # Save RGB visualization
         if vis_rgb:
-            vis_im_rgb = 0.4 * rgb.astype(np.float) + 0.6 * ren_rgb
+            vis_im_rgb = 0.4 * rgb.astype(np.float32) +\
+                         0.6 * ren_rgb + \
+                         1.0 * ren_rgb_info
             vis_im_rgb[vis_im_rgb > 255] = 255
             inout.save_im(vis_rgb_mpath.format(dataset, scene_id, im_id),
                           vis_im_rgb.astype(np.uint8))
@@ -120,12 +151,14 @@ for scene_id in scene_ids_curr:
             # Calculate the depth difference at pixels where both depth maps
             # are valid
             valid_mask = (depth > 0) * (ren_depth > 0)
-            depth_diff = valid_mask * (depth - ren_depth.astype(np.float))
+            depth_diff = valid_mask * (depth - ren_depth.astype(np.float32))
 
-            plt.matshow(depth_diff)
-            plt.axis('off')
-            plt.title('measured - GT depth [mm]')
-            plt.colorbar()
+            f, ax = plt.subplots(1, 1)
+            cax = ax.matshow(depth_diff)
+            ax.axis('off')
+            ax.set_title('measured - GT depth [mm]')
+            f.colorbar(cax, fraction=0.03, pad=0.01)
+            f.tight_layout(pad=0)
             plt.savefig(vis_depth_mpath.format(dataset, scene_id, im_id), pad=0,
                         bbox_inches='tight')
             plt.close()

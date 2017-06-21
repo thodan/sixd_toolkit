@@ -61,6 +61,18 @@ def depth_im_to_dist_im(depth_im, K):
     dist_im = np.linalg.norm(np.dstack((Xs, Ys, depth_im)), axis=2)
     return dist_im
 
+def rgbd_to_point_cloud(K, depth, rgb=np.array([])):
+    vs, us = depth.nonzero()
+    zs = depth[vs, us]
+    xs = ((us - K[0, 2]) * zs) / float(K[0, 0])
+    ys = ((vs - K[1, 2]) * zs) / float(K[1, 1])
+    pts = np.array([xs, ys, zs]).T
+    if rgb != np.array([]):
+        colors = rgb[vs, us, :]
+    else:
+        colors = None
+    return pts, colors
+
 def calc_2d_bbox(xs, ys, im_size):
     bbTL = (max(xs.min() - 1, 0),
             max(ys.min() - 1, 0))
@@ -72,6 +84,15 @@ def calc_pose_2d_bbox(model, im_size, K, R_m2c, t_m2c):
     pts_im = project_pts(model['pts'], K, R_m2c, t_m2c)
     pts_im = np.round(pts_im).astype(np.int)
     return calc_2d_bbox(pts_im[:, 0], pts_im[:, 1], im_size)
+
+def crop_im(im, roi):
+    if im.ndim == 3:
+        crop = im[max(roi[1], 0):min(roi[1] + roi[3] + 1, im.shape[0]),
+                  max(roi[0], 0):min(roi[0] + roi[2] + 1, im.shape[1]), :]
+    else:
+        crop = im[max(roi[1], 0):min(roi[1] + roi[3] + 1, im.shape[0]),
+                  max(roi[0], 0):min(roi[0] + roi[2] + 1, im.shape[1])]
+    return crop
 
 def transform_pts_Rt(pts, R, t):
     """

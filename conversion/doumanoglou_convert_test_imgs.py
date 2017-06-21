@@ -15,10 +15,10 @@ from pysixd import inout, misc, renderer
 from params.dataset_params import get_dataset_params
 par = get_dataset_params('doumanoglou')
 
-rgb_in_mpath = par['base_path'] + 'orig/test/scene_{:02d}/rgb{}.png'
-depth_in_mpath = par['base_path'] + 'orig/test/scene_{:02d}/depth{}.png'
-cam_pose_mpath = par['base_path'] + 'orig/test/scene_{:02d}/camera_pose_{}.txt'
-obj_pose_mpath = par['base_path'] + 'orig/test/scene_{:02d}/{}{}_{}.txt'
+rgb_in_mpath = par['base_path'] + 'orig/test/{:02d}/rgb{}.png'
+depth_in_mpath = par['base_path'] + 'orig/test/{:02d}/depth{}.png'
+cam_pose_mpath = par['base_path'] + 'orig/test/{:02d}/camera_pose_{}.txt'
+obj_pose_mpath = par['base_path'] + 'orig/test/{:02d}/{}{}_{}.txt'
 model_mpath = par['base_path'] + 'models/obj_{:02d}.ply'
 bbox_cens_path = par['base_path'] + 'bbox_cens.yml'
 
@@ -163,7 +163,7 @@ for scene_id in sorted(scenes.keys()):
         rgb = inout.load_im(rgb_in_mpath.format(scene_id, im_id))
         depth = inout.load_depth(depth_in_mpath.format(scene_id, im_id))
 
-        depth *= 10.0  # Convert depth map to [100um]
+        #depth *= 10.0  # Convert depth map to [100um]
 
         # Save the RGB and depth image
         inout.save_im(rgb_out_mpath.format(scene_id, im_id_out), rgb)

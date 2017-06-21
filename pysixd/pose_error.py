@@ -11,7 +11,8 @@ import renderer
 import misc
 import visibility
 
-def vsd(R_est, t_est, R_gt, t_gt, model, depth_test, delta, tau, K):
+def vsd(R_est, t_est, R_gt, t_gt, model, depth_test, K, delta, tau,
+        cost_type='tlinear'):
     """
     Visible Surface Discrepancy.
 
@@ -20,8 +21,13 @@ def vsd(R_est, t_est, R_gt, t_gt, model, depth_test, delta, tau, K):
     :param model: Object model given by a dictionary where item 'pts'
     is nx3 ndarray with 3D model points.
     :param depth_test: Depth image of the test scene.
+    :param K: Camera matrix.
     :param delta: Tolerance used for estimation of the visibility masks.
     :param tau: Misalignment tolerance.
+    :param cost_type: Pixel-wise matching cost:
+        'tlinear' - Used in the original definition of VSD in:
+            Hodan et al., On Evaluation of 6D Object Pose Estimation, ECCVW 2016
+        'step' - Used for SIXD Challenge 2017. It is easier to interpret.
     :return: Error of pose_est w.r.t. pose_gt.
     """
 
@@ -51,8 +57,14 @@ def vsd(R_est, t_est, R_gt, t_gt, model, depth_test, delta, tau, K):
 
     # Pixel-wise matching cost
     costs = np.abs(dist_gt[visib_inter] - dist_est[visib_inter])
-    costs *= (1.0 / tau)
-    costs[costs > 1.0] = 1.0
+    if cost_type == 'step':
+        costs = costs >= tau
+    elif cost_type == 'tlinear': # Truncated linear
+        costs *= (1.0 / tau)
+        costs[costs > 1.0] = 1.0
+    else:
+        print('Error: Unknown pixel matching cost.')
+        exit(-1)
 
     # costs_vis = np.ones(dist_gt.shape)
     # costs_vis[visib_inter] = costs
@@ -65,7 +77,7 @@ def vsd(R_est, t_est, R_gt, t_gt, model, depth_test, delta, tau, K):
     visib_union_count = visib_union.sum()
     visib_comp_count = visib_union_count - visib_inter.sum()
     if visib_union_count > 0:
-        e = (costs.sum() + visib_comp_count) / visib_union_count
+        e = (costs.sum() + visib_comp_count) / float(visib_union_count)
     else:
         e = 1.0
     return e

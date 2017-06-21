@@ -18,6 +18,7 @@ result_base = '/home/tom/th_data/cmp/projects/sixd/sixd_results/'
 # result_base = '/datagrid/6DB/sixd_results/'
 result_paths = [
     result_base + 'hodan-iros15-forwacv17_tless_primesense'
+    # result_base + 'hodan-iros15-nopso_hinterstoisser'
 ]
 
 # Other paths
@@ -37,15 +38,19 @@ error_type = 'vsd' # 'vsd', 'adi', 'add', 'cou', 're', 'te'
 # VSD parameters
 vsd_delta = 15
 vsd_tau = 20
+vsd_cost = 'step' # 'step', 'tlinear'
 
 # Error signature
 error_sign = 'error=' + error_type + '_ntop=' + str(n_top)
 if error_type == 'vsd':
-    error_sign += '_delta=' + str(vsd_delta) + '_tau=' + str(vsd_tau)
+    error_sign += '_delta={}_tau={}_cost={}'.format(
+        vsd_delta, vsd_tau, vsd_cost)
 
 # Error calculation
 #-------------------------------------------------------------------------------
 for result_path in result_paths:
+    print('Processing: ' + result_path)
+
     info = os.path.basename(result_path).split('_')
     method = info[0]
     dataset = info[1]
@@ -145,7 +150,8 @@ for result_path in result_paths:
 
                     if error_type == 'vsd':
                         e = pose_error.vsd(R_e, t_e, R_g, t_g, models[obj_id],
-                                           depth_im, vsd_delta, vsd_tau, K)
+                                           depth_im, K, vsd_delta, vsd_tau,
+                                           vsd_cost)
                     elif error_type == 'add':
                         e = pose_error.add(R_e, t_e, R_g, t_g, models[obj_id])
                     elif error_type == 'adi':

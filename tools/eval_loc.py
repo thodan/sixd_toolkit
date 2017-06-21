@@ -29,8 +29,18 @@ error_paths = [
     # error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=cou_ntop=1',
     # error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=re_ntop=1',
     # error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=te_ntop=1',
-    error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=vsd_ntop=1_delta=15_tau=20'
-    # error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=vsd_ntop=1_delta=15_tau=50'
+    error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=vsd_ntop=1_delta=15_tau=20_cost=step',
+    # error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=vsd_ntop=1_delta=15_tau=30_cost=step',
+    # error_bpath + 'hodan-iros15-forwacv17_tless_primesense_eval/error=vsd_ntop=1_delta=15_tau=50_cost=step',
+
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=add_ntop=1',
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=adi_ntop=1',
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=cou_ntop=1',
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=re_ntop=1',
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=te_ntop=1',
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=vsd_ntop=1_delta=15_tau=20_cost=step',
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=vsd_ntop=1_delta=15_tau=30_cost=step',
+    # error_bpath + 'hodan-iros15-nopso_hinterstoisser_eval/error=vsd_ntop=1_delta=15_tau=50_cost=step',
 ]
 
 # Other paths
@@ -64,16 +74,16 @@ error_thresh_fact = {
 # Matching estimated poses to the GT poses
 #-------------------------------------------------------------------------------
 for error_path in error_paths:
+    print('Processing: ' + error_path)
 
-    # Parse info about the calculated errors from the folder names
+    # Parse info about the errors from the folder names
     error_sign = os.path.basename(error_path)
     error_type = error_sign.split('_')[0].split('=')[1]
     n_top = int(error_sign.split('_')[1].split('=')[1])
-
     res_sign = os.path.basename(os.path.dirname(error_path)).split('_')
     method = res_sign[0]
     dataset = res_sign[1]
-    test_type = res_sign[2] if len(res_sign) > 2 else ''
+    test_type = res_sign[2] if len(res_sign) > 3 else ''
 
     # Load dataset parameters
     dp = get_dataset_params(dataset, test_type=test_type)
@@ -103,7 +113,7 @@ for error_path in error_paths:
         gts = inout.load_gt(dp['scene_gt_mpath'].format(scene_id))
 
         # Load visibility fractions of the GT poses
-        gt_visib_path = dp['scene_gt_visib_mpath'].format(scene_id, visib_delta)
+        gt_visib_path = dp['scene_gt_stats_mpath'].format(scene_id, visib_delta)
         gt_visib = inout.load_yaml(gt_visib_path)
 
         # Load pre-calculated errors of the pose estimates

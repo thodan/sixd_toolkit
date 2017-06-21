@@ -17,8 +17,8 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
     # tless_tk_path = '/home.dokt/hodanto2/projects/sixd/t-less_toolkit/'
 
     if name == 'hinterstoisser':
-        p['obj_count'] = 3
-        p['scene_count'] = 3
+        p['obj_count'] = 15
+        p['scene_count'] = 15
         p['test_im_size'] = (640, 480)
         p['base_path'] = common_base_path + 'hinterstoisser/'
         p['im_id_pad'] = 4
@@ -75,7 +75,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['obj_count'] = 2
         p['scene_count'] = 3
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'doumanoglou/'
+        p['base_path'] = common_base_path + 'others/imperial/doumanoglou_scenario_2/'
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
@@ -97,7 +97,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
 
     p['scene_info_mpath'] = p['base_path'] + test_dir + '/{:02d}/info.yml'
     p['scene_gt_mpath'] = p['base_path'] + test_dir + '/{:02d}/gt.yml'
-    p['scene_gt_visib_mpath'] = p['base_path'] + test_dir + '_gt_visib/{:02d}_delta={}.yml'
+    p['scene_gt_stats_mpath'] = p['base_path'] + test_dir + '_gt_stats/{:02d}_delta={}.yml'
     p['test_rgb_mpath'] = p['base_path'] + test_dir + '/{:02d}/rgb/' + im_id_f + '.png'
     p['test_depth_mpath'] = p['base_path'] + test_dir + '/{:02d}/depth/' + im_id_f + '.png'
 
