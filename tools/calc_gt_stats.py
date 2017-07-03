@@ -72,6 +72,8 @@ for scene_id in scene_ids:
             depth_gt = renderer.render(models[gt['obj_id']], im_size, K,
                                        gt['cam_R_m2c'], gt['cam_t_m2c'],
                                        mode='depth')
+
+            # Get distance images
             dist_gt = misc.depth_im_to_dist_im(depth_gt, K)
             dist_im = misc.depth_im_to_dist_im(depth_im, K)
 

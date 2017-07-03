@@ -39,7 +39,7 @@ vis_rgb = True
 vis_rgb_resolve_visib = True
 
 # Indicates whether to render depth image
-vis_depth = False
+vis_depth = True
 
 # Define colors
 colors = inout.load_yaml('../data/colors.yml')
