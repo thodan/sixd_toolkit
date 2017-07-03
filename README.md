@@ -47,11 +47,9 @@ To use a different backend library, see the first lines of
 6D localization task (fill list **error_paths** in the script with paths to the
 calculated errors first).
 
-Sample results can be downloaded from:
-http://ptak.felk.cvut.cz/6DB/public/sixd_results
+- [Measuring error of 6D object pose](https://github.com/thodan/sixd_toolkit/blob/master/doc/sixd_2017_measuring_error.pdf)
+- [Sample results](http://ptak.felk.cvut.cz/6DB/public/sixd_results)
 
-**Note: The setting of evaluation parameters for the SIXD Challenge 2017 is
-currently being decided.**
 
 ## Author
 
