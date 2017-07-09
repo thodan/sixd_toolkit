@@ -41,7 +41,10 @@ vis_rgb_resolve_visib = True
 # Indicates whether to render depth image
 vis_depth = True
 
-# Define colors
+# If to use the original model color
+vis_orig_color = True
+
+# Define new object colors (used if vis_orig_colors == False)
 colors = inout.load_yaml('../data/colors.yml')
 
 # Path masks for output images
@@ -89,7 +92,10 @@ for scene_id in scene_ids_curr:
         for gt_id in gt_ids_curr:
             gt = scene_gt[im_id][gt_id]
             obj_id = gt['obj_id']
-            color = tuple(colors[(obj_id - 1) % len(colors)])
+            if vis_orig_color:
+                color = (1, 1, 1)
+            else:
+                color = tuple(colors[(obj_id - 1) % len(colors)])
             color_uint8 = tuple([int(255 * c) for c in color])
 
             model = models[gt['obj_id']]
@@ -99,8 +105,11 @@ for scene_id in scene_ids_curr:
 
             # Rendering
             if vis_rgb:
-                m_rgb = renderer.render(model, im_size, K, R, t, mode='rgb',
-                                        surf_color=color)
+                if vis_orig_color:
+                    m_rgb = renderer.render(model, im_size, K, R, t, mode='rgb')
+                else:
+                    m_rgb = renderer.render(model, im_size, K, R, t, mode='rgb',
+                                            surf_color=color)
 
             if vis_depth or (vis_rgb and vis_rgb_resolve_visib):
                 m_depth = renderer.render(model, im_size, K, R, t, mode='depth')
@@ -139,8 +148,8 @@ for scene_id in scene_ids_curr:
 
         # Save RGB visualization
         if vis_rgb:
-            vis_im_rgb = 0.4 * rgb.astype(np.float32) +\
-                         0.6 * ren_rgb + \
+            vis_im_rgb = 0.5 * rgb.astype(np.float32) +\
+                         0.5 * ren_rgb + \
                          1.0 * ren_rgb_info
             vis_im_rgb[vis_im_rgb > 255] = 255
             inout.save_im(vis_rgb_mpath.format(dataset, scene_id, im_id),
