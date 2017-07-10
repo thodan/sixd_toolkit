@@ -38,7 +38,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         if p['test_type'] == '': p['test_type'] = 'primesense'
         if p['cam_type'] == '': p['cam_type'] = 'primesense'
 
-        p['cam_params_path'] = tless_tk_path + 'cam/camera_' +p['cam_type'] + '.yml'
+        p['cam_params_path'] = tless_tk_path + 'cam/camera_' + p['cam_type'] + '.yml'
         if p['test_type'] in ['primesense', 'kinect']:
             p['test_im_size'] = (720, 540)
         elif p['test_type'] == 'canon':
