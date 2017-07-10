@@ -1,7 +1,7 @@
 # Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
 # Center for Machine Perception, Czech Technical University in Prague
 
-from pysixd import inout
+from ..pysixd import inout
 
 def get_dataset_params(name, model_type='', train_type='', test_type='', cam_type=''):
 
