@@ -73,12 +73,18 @@ def rgbd_to_point_cloud(K, depth, rgb=np.array([])):
         colors = None
     return pts, colors
 
-def calc_2d_bbox(xs, ys, im_size):
-    bbTL = (max(xs.min() - 1, 0),
-            max(ys.min() - 1, 0))
-    bbBR = (min(xs.max() + 1, im_size[0] - 1),
-            min(ys.max() + 1, im_size[1] - 1))
-    return [bbTL[0], bbTL[1], bbBR[0] - bbTL[0], bbBR[1] - bbTL[1]]
+def clip_pt_to_im(pt, im_size):
+    pt[0] = min(max(pt[0], 0), im_size[0] - 1)
+    pt[1] = min(max(pt[1], 0), im_size[1] - 1)
+    return pt
+
+def calc_2d_bbox(xs, ys, im_size, clip=False):
+    bb_tl = [xs.min(), ys.min()]
+    bb_br = [xs.max(), ys.max()]
+    if clip:
+        bb_tl = clip_pt_to_im(bb_tl, im_size)
+        bb_br = clip_pt_to_im(bb_br, im_size)
+    return [bb_tl[0], bb_tl[1], bb_br[0] - bb_tl[0], bb_br[1] - bb_tl[1]]
 
 def calc_pose_2d_bbox(model, im_size, K, R_m2c, t_m2c):
     pts_im = project_pts(model['pts'], K, R_m2c, t_m2c)

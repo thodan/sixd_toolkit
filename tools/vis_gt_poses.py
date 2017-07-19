@@ -42,7 +42,7 @@ vis_rgb_resolve_visib = True
 vis_depth = True
 
 # If to use the original model color
-vis_orig_color = True
+vis_orig_color = False
 
 # Define new object colors (used if vis_orig_colors == False)
 colors = inout.load_yaml('../data/colors.yml')

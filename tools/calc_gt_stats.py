@@ -12,15 +12,15 @@ sys.path.append(os.path.abspath('..'))
 from pysixd import inout, misc, renderer, visibility
 from params.dataset_params import get_dataset_params
 
-# dataset = 'hinterstoisser'
-dataset = 'tless'
+dataset = 'hinterstoisser'
+# dataset = 'tless'
 # dataset = 'tudlight'
 # dataset = 'rutgers'
 # dataset = 'tejani'
 # dataset = 'doumanoglou'
 
 delta = 15 # Tolerance used in the visibility test [mm]
-do_vis = True # Whether to save visualizations of visibility masks
+do_vis = False # Whether to save visualizations of visibility masks
 
 # Select data type
 if dataset == 'tless':
@@ -38,15 +38,18 @@ dp = get_dataset_params(dataset, model_type=model_type, test_type=test_type,
 obj_ids = range(1, dp['obj_count'] + 1)
 scene_ids = range(1, dp['scene_count'] + 1)
 
-# Mask of path of the output visualizations
-vis_mpath = '../output/gt_visib_{}_delta={}/{:02d}/' +\
-            '{:' + str(dp['im_id_pad']).zfill(2) + 'd}_{:02d}.jpg'
+# Path masks of the output visualizations
+vis_base = '../output/vis_gt_visib_{}_delta={}/{:02d}/'
+vis_mpath = vis_base + '{:' + str(dp['im_id_pad']).zfill(2) + 'd}_{:02d}.jpg'
+vis_delta_mpath = vis_base + '{:' + str(dp['im_id_pad']).zfill(2) +\
+                  'd}_{:02d}_diff_below_delta={}.jpg'
 
 print('Loading object models...')
 models = {}
 for obj_id in obj_ids:
     models[obj_id] = inout.load_ply(dp['model_mpath'].format(obj_id))
 
+# visib_to_below_delta_fracs = []
 for scene_id in scene_ids:
     if do_vis:
         misc.ensure_dir(os.path.dirname(
@@ -89,6 +92,12 @@ for scene_id in scene_ids:
 
             im_size = (obj_mask_gt.shape[1], obj_mask_gt.shape[0])
 
+            # Absolute difference of the distance images
+            dist_diff = np.abs(dist_gt.astype(np.float32) -
+                               dist_im.astype(np.float32))
+            mask_below_delta = dist_diff < delta
+            mask_below_delta *= obj_mask_gt
+
             # Bounding box of the object mask
             bbox_all = [-1, -1, -1, -1]
             if px_count_all > 0:
@@ -110,7 +119,17 @@ for scene_id in scene_ids:
                 'bbox_visib': [int(e) for e in bbox_visib]
             })
 
+            # mask_below_delta_sum = float(mask_below_delta.sum())
+            # if mask_below_delta_sum > 0:
+            #     visib_to_below_delta_fracs.append({
+            #         'scene_id': scene_id,
+            #         'im_id': im_id,
+            #         'gt_id': gt_id,
+            #         'frac': visib_gt.sum() / float(mask_below_delta.sum())
+            #     })
+
             if do_vis:
+                # Visibility mask
                 depth_im_vis = misc.norm_depth(depth_im, 0.2, 1.0)
                 depth_im_vis = np.dstack([depth_im_vis] * 3)
 
@@ -120,10 +139,31 @@ for scene_id in scene_ids:
 
                 vis = 0.5 * depth_im_vis + 0.5 * visib_gt_vis
                 vis[vis > 1] = 1
-                vis_path = vis_mpath.format(dataset, delta, scene_id,
-                                            im_id, gt_id)
+                vis_path = vis_mpath.format(
+                    dataset, delta, scene_id, im_id, gt_id)
                 inout.save_im(vis_path, vis)
+
+                # Mask of depth differences below delta
+                mask_below_delta_vis = np.dstack([mask_below_delta,
+                                                  zero_ch, zero_ch])
+                vis_delta = 0.5 * depth_im_vis + 0.5 * mask_below_delta_vis
+                vis_delta[vis_delta > 1] = 1
+                vis_delta_path = vis_delta_mpath.format(
+                    dataset, delta, scene_id, im_id, gt_id, delta)
+                inout.save_im(vis_delta_path, vis_delta)
 
     res_path = dp['scene_gt_stats_mpath'].format(scene_id, delta)
     misc.ensure_dir(os.path.dirname(res_path))
     inout.save_yaml(res_path, gt_stats)
+
+# visib_to_below_delta_fracs = sorted(visib_to_below_delta_fracs,
+#                                     key=lambda x: x['frac'], reverse=True)
+# for i in range(200):
+#     e = visib_to_below_delta_fracs[i]
+#     print('{}: scene_id: {}, im_id: {}, gt_id: {}, frac: {}'.format(
+#         i, e['scene_id'], e['im_id'], e['gt_id'], e['frac']
+#     ))
+#
+# import matplotlib.pyplot as plt
+# plt.plot([e['frac'] for e in visib_to_below_delta_fracs])
+# plt.show()
