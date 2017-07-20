@@ -13,7 +13,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
          'train_type': train_type, 'test_type': test_type, 'cam_type': cam_type}
 
     # Folder with datasets
-    common_base_path = '/local/datasets/tlod/'
+    common_base_path = '/local/datasets/sixd/'
     # common_base_path = '/datagrid/personal/hodanto2/datasets/sixd/'
 
     # Path to the T-LESS Toolkit (https://github.com/thodan/t-less_toolkit)
@@ -45,11 +45,16 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
 
         p['cam_params_path'] = tless_tk_path + 'cam/camera_' + p['cam_type'] + '.yml'
         if p['test_type'] in ['primesense', 'kinect']:
-            p['train_im_size'] = (400, 400)
             p['test_im_size'] = (720, 540)
         elif p['test_type'] == 'canon':
-            p['train_im_size'] = (1900, 1900)
             p['test_im_size'] = (2560, 1920)
+
+        if p['train_type'] in ['primesense', 'kinect']:
+            p['train_im_size'] = (400, 400)
+        elif p['train_type'] == 'canon':
+            p['train_im_size'] = (1900, 1900)
+        elif p['train_type'] == 'render_reconst':
+            p['train_im_size'] = (1280, 1024)
 
     elif name == 'tudlight':
         p['obj_count'] = 3

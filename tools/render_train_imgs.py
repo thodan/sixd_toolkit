@@ -15,7 +15,7 @@ from pysixd import view_sampler, inout, misc, renderer
 
 from params.dataset_params import get_dataset_params
 
-# dataset = 'hinterstoisser'
+# dataset = 'hinterstoisser'    
 dataset = 'tless'
 # dataset = 'tudlight'
 # dataset = 'rutgers'
@@ -36,30 +36,6 @@ if dataset == 'hinterstoisser':
     azimuth_range = (0, 2 * math.pi)
     elev_range = (0, 0.5 * math.pi)
 
-elif dataset == 'tejani':
-    # Range of object dist. in test images: 509.12 - 1120.41 mm
-    radii = [500] # Radii of the view sphere [mm]
-    # radii = range(500, 1101, 100)
-
-    azimuth_range = (0, 2 * math.pi)
-    elev_range = (0, 0.5 * math.pi)
-
-elif dataset == 'rutgers':
-    # Range of object distances in test images: 594.41 - 739.12 mm
-    radii = [590] # Radii of the view sphere [mm]
-    # radii = range(500, 1101, 100) # [mm]
-
-    azimuth_range = (0, 2 * math.pi)
-    elev_range = (-0.5 * math.pi, 0.5 * math.pi)
-
-elif dataset == 'tudlight':
-    # Range of object distances in test images: 851.29 - 2016.14 mm
-    radii = [850] # Radii of the view sphere [mm]
-    # radii = range(500, 1101, 100) # [mm]
-
-    azimuth_range = (0, 2 * math.pi)
-    elev_range = (-0.4363, 0.5 * math.pi) # (-25, 90) [deg]
-
 elif dataset == 'tless':
     # Range of object distances in test images: 649.89 - 940.04 mm
     radii = [650] # Radii of the view sphere [mm]
@@ -70,6 +46,38 @@ elif dataset == 'tless':
 
     model_type = 'reconst'
     cam_type = 'primesense'
+
+elif dataset == 'tudlight':
+    # Range of object distances in test images: 851.29 - 2016.14 mm
+    radii = [850] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100) # [mm]
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (-0.4363, 0.5 * math.pi) # (-25, 90) [deg]
+
+elif dataset == 'rutgers':
+    # Range of object distances in test images: 594.41 - 739.12 mm
+    radii = [590] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100) # [mm]
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (-0.5 * math.pi, 0.5 * math.pi)
+
+elif dataset == 'tejani':
+    # Range of object dist. in test images: 509.12 - 1120.41 mm
+    radii = [500] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100)
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (0, 0.5 * math.pi)
+
+elif dataset == 'doumanoglou':
+    # Range of object dist. in test images: 454.56 - 1076.29 mm
+    radii = [450] # Radii of the view sphere [mm]
+    # radii = range(500, 1101, 100)
+
+    azimuth_range = (0, 2 * math.pi)
+    elev_range = (-1.0297, 0.5 * math.pi) # (-59, 90) [deg]
 
 par = get_dataset_params(dataset, model_type=model_type, cam_type=cam_type)
 

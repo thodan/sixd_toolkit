@@ -12,15 +12,15 @@ sys.path.append(os.path.abspath('..'))
 from pysixd import inout, misc, renderer, visibility
 from params.dataset_params import get_dataset_params
 
-dataset = 'hinterstoisser'
-# dataset = 'tless'
+# dataset = 'hinterstoisser'
+dataset = 'tless'
 # dataset = 'tudlight'
 # dataset = 'rutgers'
 # dataset = 'tejani'
 # dataset = 'doumanoglou'
 
 delta = 15 # Tolerance used in the visibility test [mm]
-do_vis = False # Whether to save visualizations of visibility masks
+do_vis = True # Whether to save visualizations of visibility masks
 
 # Select data type
 if dataset == 'tless':
@@ -41,8 +41,8 @@ scene_ids = range(1, dp['scene_count'] + 1)
 # Path masks of the output visualizations
 vis_base = '../output/vis_gt_visib_{}_delta={}/{:02d}/'
 vis_mpath = vis_base + '{:' + str(dp['im_id_pad']).zfill(2) + 'd}_{:02d}.jpg'
-vis_delta_mpath = vis_base + '{:' + str(dp['im_id_pad']).zfill(2) +\
-                  'd}_{:02d}_diff_below_delta={}.jpg'
+# vis_delta_mpath = vis_base + '{:' + str(dp['im_id_pad']).zfill(2) +\
+#                   'd}_{:02d}_diff_below_delta={}.jpg'
 
 print('Loading object models...')
 models = {}
@@ -88,21 +88,28 @@ for scene_id in scene_ids:
             px_count_valid = np.sum(dist_im[obj_mask_gt] > 0)
             px_count_visib = visib_gt.sum()
             px_count_all = obj_mask_gt.sum()
-            visib_fract = px_count_visib / float(px_count_all)
+            if px_count_all > 0:
+                visib_fract = px_count_visib / float(px_count_all)
+            else:
+                visib_fract = 0.0
 
             im_size = (obj_mask_gt.shape[1], obj_mask_gt.shape[0])
 
             # Absolute difference of the distance images
-            dist_diff = np.abs(dist_gt.astype(np.float32) -
-                               dist_im.astype(np.float32))
-            mask_below_delta = dist_diff < delta
-            mask_below_delta *= obj_mask_gt
+            # dist_diff = np.abs(dist_gt.astype(np.float32) -
+            #                    dist_im.astype(np.float32))
+            # mask_below_delta = dist_diff < delta
+            # mask_below_delta *= obj_mask_gt
 
             # Bounding box of the object mask
-            bbox_all = [-1, -1, -1, -1]
-            if px_count_all > 0:
-                ys, xs = obj_mask_gt.nonzero()
-                bbox_all = misc.calc_2d_bbox(xs, ys, im_size)
+            # bbox_all = [-1, -1, -1, -1]
+            # if px_count_all > 0:
+            #     ys, xs = obj_mask_gt.nonzero()
+            #     bbox_all = misc.calc_2d_bbox(xs, ys, im_size)
+
+            # Bounding box of the object projection
+            bbox_obj = misc.calc_pose_2d_bbox(models[gt['obj_id']], im_size,
+                                              K, gt['cam_R_m2c'], gt['cam_t_m2c'])
 
             # Bounding box of the visible surface part
             bbox_visib = [-1, -1, -1, -1]
@@ -115,7 +122,7 @@ for scene_id in scene_ids:
                 'px_count_visib': int(px_count_visib),
                 'px_count_valid': int(px_count_valid),
                 'visib_fract': float(visib_fract),
-                'bbox_all': [int(e) for e in bbox_all],
+                'bbox_obj': [int(e) for e in bbox_obj],
                 'bbox_visib': [int(e) for e in bbox_visib]
             })
 
@@ -144,13 +151,13 @@ for scene_id in scene_ids:
                 inout.save_im(vis_path, vis)
 
                 # Mask of depth differences below delta
-                mask_below_delta_vis = np.dstack([mask_below_delta,
-                                                  zero_ch, zero_ch])
-                vis_delta = 0.5 * depth_im_vis + 0.5 * mask_below_delta_vis
-                vis_delta[vis_delta > 1] = 1
-                vis_delta_path = vis_delta_mpath.format(
-                    dataset, delta, scene_id, im_id, gt_id, delta)
-                inout.save_im(vis_delta_path, vis_delta)
+                # mask_below_delta_vis = np.dstack([mask_below_delta,
+                #                                   zero_ch, zero_ch])
+                # vis_delta = 0.5 * depth_im_vis + 0.5 * mask_below_delta_vis
+                # vis_delta[vis_delta > 1] = 1
+                # vis_delta_path = vis_delta_mpath.format(
+                #     dataset, delta, scene_id, im_id, gt_id, delta)
+                # inout.save_im(vis_delta_path, vis_delta)
 
     res_path = dp['scene_gt_stats_mpath'].format(scene_id, delta)
     misc.ensure_dir(os.path.dirname(res_path))

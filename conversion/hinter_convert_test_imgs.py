@@ -122,12 +122,15 @@ for scene_id in scene_ids:
         t_m2c = t_m2c + R_m2c.dot(R_model.dot(t_model))
 
         # Get 2D bounding box of the object model at the ground truth pose
-        obj_bb = misc.calc_pose_2d_bbox(model, par['cam']['im_size'], par['cam']['K'], R_m2c, t_m2c)
+        obj_bb = misc.calc_pose_2d_bbox(model, par['cam']['im_size'],
+                                        par['cam']['K'], R_m2c, t_m2c)
 
         # Visualisation
         if False:
-            ren_rgb = renderer.render(model, par['cam']['im_size'], par['cam']['K'], R_m2c, t_m2c, mode='rgb')
-            vis_rgb = 0.4 * rgb.astype(np.float32) + 0.6 * ren_rgb.astype(np.float32)
+            ren_rgb = renderer.render(model, par['cam']['im_size'],
+                                      par['cam']['K'], R_m2c, t_m2c, mode='rgb')
+            vis_rgb = 0.4 * rgb.astype(np.float32) +\
+                      0.6 * ren_rgb.astype(np.float32)
             vis_rgb = vis_rgb.astype(np.uint8)
             vis_rgb = misc.draw_rect(vis_rgb, obj_bb)
             plt.imshow(vis_rgb)

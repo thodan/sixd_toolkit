@@ -74,9 +74,9 @@ def rgbd_to_point_cloud(K, depth, rgb=np.array([])):
     return pts, colors
 
 def clip_pt_to_im(pt, im_size):
-    pt[0] = min(max(pt[0], 0), im_size[0] - 1)
-    pt[1] = min(max(pt[1], 0), im_size[1] - 1)
-    return pt
+    pt_c = [min(max(pt[0], 0), im_size[0] - 1),
+            min(max(pt[1], 0), im_size[1] - 1)]
+    return pt_c
 
 def calc_2d_bbox(xs, ys, im_size, clip=False):
     bb_tl = [xs.min(), ys.min()]
