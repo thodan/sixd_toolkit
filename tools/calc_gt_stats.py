@@ -19,6 +19,9 @@ dataset = 'tless'
 # dataset = 'tejani'
 # dataset = 'doumanoglou'
 
+dataset_part = 'train'
+# dataset_part = 'test'
+
 delta = 15 # Tolerance used in the visibility test [mm]
 do_vis = True # Whether to save visualizations of visibility masks
 
@@ -36,7 +39,20 @@ else:
 dp = get_dataset_params(dataset, model_type=model_type, test_type=test_type,
                         cam_type=cam_type)
 obj_ids = range(1, dp['obj_count'] + 1)
-scene_ids = range(1, dp['scene_count'] + 1)
+
+if dataset_part == 'train':
+    data_ids = range(1, dp['obj_count'] + 1)
+    depth_path_key = 'train_depth_mpath'
+    info_path_key = 'obj_info_mpath'
+    gt_path_key = 'obj_gt_mpath'
+    gt_stats_path_key = 'obj_gt_stats_mpath'
+
+else: # 'test'
+    data_ids = range(1, dp['scene_count'] + 1)
+    depth_path_key = 'test_depth_mpath'
+    info_path_key = 'scene_info_mpath'
+    gt_path_key = 'scene_gt_mpath'
+    gt_stats_path_key = 'scene_gt_stats_mpath'
 
 # Path masks of the output visualizations
 vis_base = '../output/vis_gt_visib_{}_delta={}/{:02d}/'
@@ -50,22 +66,22 @@ for obj_id in obj_ids:
     models[obj_id] = inout.load_ply(dp['model_mpath'].format(obj_id))
 
 # visib_to_below_delta_fracs = []
-for scene_id in scene_ids:
+for data_id in data_ids:
     if do_vis:
         misc.ensure_dir(os.path.dirname(
-            vis_mpath.format(dataset, delta, scene_id, 0, 0)))
+            vis_mpath.format(dataset, delta, data_id, 0, 0)))
 
     # Load scene info and gts
-    info = inout.load_info(dp['scene_info_mpath'].format(scene_id))
-    gts = inout.load_gt(dp['scene_gt_mpath'].format(scene_id))
+    info = inout.load_info(dp[info_path_key].format(data_id))
+    gts = inout.load_gt(dp[gt_path_key].format(data_id))
 
     im_ids = sorted(gts.keys())
     gt_stats = {}
     for im_id in im_ids:
-        print('dataset: {}, scene: {}, im: {}'.format(dataset, scene_id, im_id))
+        print('dataset: {}, scene/obj: {}, im: {}'.format(dataset, data_id, im_id))
 
         K = info[im_id]['cam_K']
-        depth_path = dp['test_depth_mpath'].format(scene_id, im_id)
+        depth_path = dp[depth_path_key].format(data_id, im_id)
         depth_im = inout.load_depth(depth_path)
         depth_im *= dp['cam']['depth_scale'] # to [mm]
         im_size = (depth_im.shape[1], depth_im.shape[0])
@@ -129,7 +145,7 @@ for scene_id in scene_ids:
             # mask_below_delta_sum = float(mask_below_delta.sum())
             # if mask_below_delta_sum > 0:
             #     visib_to_below_delta_fracs.append({
-            #         'scene_id': scene_id,
+            #         'data_id': data_id,
             #         'im_id': im_id,
             #         'gt_id': gt_id,
             #         'frac': visib_gt.sum() / float(mask_below_delta.sum())
@@ -147,7 +163,7 @@ for scene_id in scene_ids:
                 vis = 0.5 * depth_im_vis + 0.5 * visib_gt_vis
                 vis[vis > 1] = 1
                 vis_path = vis_mpath.format(
-                    dataset, delta, scene_id, im_id, gt_id)
+                    dataset, delta, data_id, im_id, gt_id)
                 inout.save_im(vis_path, vis)
 
                 # Mask of depth differences below delta
@@ -156,10 +172,10 @@ for scene_id in scene_ids:
                 # vis_delta = 0.5 * depth_im_vis + 0.5 * mask_below_delta_vis
                 # vis_delta[vis_delta > 1] = 1
                 # vis_delta_path = vis_delta_mpath.format(
-                #     dataset, delta, scene_id, im_id, gt_id, delta)
+                #     dataset, delta, data_id, im_id, gt_id, delta)
                 # inout.save_im(vis_delta_path, vis_delta)
 
-    res_path = dp['scene_gt_stats_mpath'].format(scene_id, delta)
+    res_path = dp[gt_stats_path_key].format(data_id, delta)
     misc.ensure_dir(os.path.dirname(res_path))
     inout.save_yaml(res_path, gt_stats)
 
@@ -167,8 +183,8 @@ for scene_id in scene_ids:
 #                                     key=lambda x: x['frac'], reverse=True)
 # for i in range(200):
 #     e = visib_to_below_delta_fracs[i]
-#     print('{}: scene_id: {}, im_id: {}, gt_id: {}, frac: {}'.format(
-#         i, e['scene_id'], e['im_id'], e['gt_id'], e['frac']
+#     print('{}: data_id: {}, im_id: {}, gt_id: {}, frac: {}'.format(
+#         i, e['data_id'], e['im_id'], e['gt_id'], e['frac']
 #     ))
 #
 # import matplotlib.pyplot as plt

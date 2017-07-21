@@ -18,23 +18,34 @@ dataset = 'tless'
 # dataset = 'tejani'
 # dataset = 'doumanoglou'
 
+dataset_part = 'train'
+# dataset_part = 'test'
+
 delta = 15 # Tolerance used in the visibility test [mm]
 
 # Load dataset parameters
 dp = get_dataset_params(dataset)
-obj_ids = range(1, dp['obj_count'] + 1)
-scene_ids = range(1, dp['scene_count'] + 1)
+
+if dataset_part == 'train':
+    data_ids = range(1, dp['obj_count'] + 1)
+    gt_path_key = 'obj_gt_mpath'
+    gt_stats_path_key = 'obj_gt_stats_mpath'
+
+else: # 'test'
+    data_ids = range(1, dp['scene_count'] + 1)
+    gt_path_key = 'scene_gt_mpath'
+    gt_stats_path_key = 'scene_gt_stats_mpath'
 
 # Load the GT statistics
 gt_stats = []
-for scene_id in scene_ids:
-    print('Loading GT stats: {}, {}'.format(dataset, scene_id))
-    gts = inout.load_gt(dp['scene_gt_mpath'].format(scene_id))
+for data_id in data_ids:
+    print('Loading GT stats: {}, {}'.format(dataset, data_id))
+    gts = inout.load_gt(dp[gt_path_key].format(data_id))
     gt_stats_curr = inout.load_yaml(
-        dp['scene_gt_stats_mpath'].format(scene_id, delta))
+        dp[gt_stats_path_key].format(data_id, delta))
     for im_id, gt_stats_im in gt_stats_curr.items():
         for gt_id, p in enumerate(gt_stats_im):
-            p['scene_id'] = scene_id
+            p['data_id'] = data_id
             p['im_id'] = im_id
             p['gt_id'] = gt_id
             p['obj_id'] = gts[im_id][gt_id]['obj_id']
