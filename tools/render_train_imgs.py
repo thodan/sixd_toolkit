@@ -15,7 +15,7 @@ from pysixd import view_sampler, inout, misc, renderer
 
 from params.dataset_params import get_dataset_params
 
-# dataset = 'hinterstoisser'    
+# dataset = 'hinterstoisser'
 dataset = 'tless'
 # dataset = 'tudlight'
 # dataset = 'rutgers'

@@ -112,6 +112,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
     p['models_info_path'] = p['base_path'] + models_dir + '/models_info.yml'
     p['obj_info_mpath'] = p['base_path'] + train_dir + '/{:02d}/info.yml'
     p['obj_gt_mpath'] = p['base_path'] + train_dir + '/{:02d}/gt.yml'
+    p['obj_gt_stats_mpath'] = p['base_path'] + train_dir + '_gt_stats/{:02d}_delta={}.yml'
     p['train_rgb_mpath'] = p['base_path'] + train_dir + '/{:02d}/rgb/' + im_id_f + '.png'
     p['train_depth_mpath'] = p['base_path'] + train_dir + '/{:02d}/depth/' + im_id_f + '.png'
 
