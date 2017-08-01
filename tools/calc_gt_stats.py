@@ -27,32 +27,32 @@ do_vis = True # Whether to save visualizations of visibility masks
 
 # Select data type
 if dataset == 'tless':
-    test_type = 'primesense'
+    data_type = 'primesense'
     cam_type = 'primesense'
     model_type = 'cad'
 else:
-    test_type = ''
+    data_type = ''
     model_type = ''
     cam_type = ''
 
 # Load dataset parameters
-dp = get_dataset_params(dataset, model_type=model_type, test_type=test_type,
-                        cam_type=cam_type)
+dp = get_dataset_params(dataset, model_type=model_type, train_type=data_type,
+                        test_type=data_type, cam_type=cam_type)
 obj_ids = range(1, dp['obj_count'] + 1)
 
 if dataset_part == 'train':
     data_ids = range(1, dp['obj_count'] + 1)
-    depth_path_key = 'train_depth_mpath'
-    info_path_key = 'obj_info_mpath'
-    gt_path_key = 'obj_gt_mpath'
-    gt_stats_path_key = 'obj_gt_stats_mpath'
+    depth_mpath_key = 'train_depth_mpath'
+    info_mpath_key = 'obj_info_mpath'
+    gt_mpath_key = 'obj_gt_mpath'
+    gt_stats_mpath_key = 'obj_gt_stats_mpath'
 
 else: # 'test'
     data_ids = range(1, dp['scene_count'] + 1)
-    depth_path_key = 'test_depth_mpath'
-    info_path_key = 'scene_info_mpath'
-    gt_path_key = 'scene_gt_mpath'
-    gt_stats_path_key = 'scene_gt_stats_mpath'
+    depth_mpath_key = 'test_depth_mpath'
+    info_mpath_key = 'scene_info_mpath'
+    gt_mpath_key = 'scene_gt_mpath'
+    gt_stats_mpath_key = 'scene_gt_stats_mpath'
 
 # Path masks of the output visualizations
 vis_base = '../output/vis_gt_visib_{}_delta={}/{:02d}/'
@@ -72,8 +72,8 @@ for data_id in data_ids:
             vis_mpath.format(dataset, delta, data_id, 0, 0)))
 
     # Load scene info and gts
-    info = inout.load_info(dp[info_path_key].format(data_id))
-    gts = inout.load_gt(dp[gt_path_key].format(data_id))
+    info = inout.load_info(dp[info_mpath_key].format(data_id))
+    gts = inout.load_gt(dp[gt_mpath_key].format(data_id))
 
     im_ids = sorted(gts.keys())
     gt_stats = {}
@@ -81,7 +81,7 @@ for data_id in data_ids:
         print('dataset: {}, scene/obj: {}, im: {}'.format(dataset, data_id, im_id))
 
         K = info[im_id]['cam_K']
-        depth_path = dp[depth_path_key].format(data_id, im_id)
+        depth_path = dp[depth_mpath_key].format(data_id, im_id)
         depth_im = inout.load_depth(depth_path)
         depth_im *= dp['cam']['depth_scale'] # to [mm]
         im_size = (depth_im.shape[1], depth_im.shape[0])
@@ -175,7 +175,7 @@ for data_id in data_ids:
                 #     dataset, delta, data_id, im_id, gt_id, delta)
                 # inout.save_im(vis_delta_path, vis_delta)
 
-    res_path = dp[gt_stats_path_key].format(data_id, delta)
+    res_path = dp[gt_stats_mpath_key].format(data_id, delta)
     misc.ensure_dir(os.path.dirname(res_path))
     inout.save_yaml(res_path, gt_stats)
 

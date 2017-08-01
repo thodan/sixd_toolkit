@@ -110,17 +110,20 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
     # Paths and path masks
     p['model_mpath'] = p['base_path'] + models_dir + '/obj_{:02d}.ply'
     p['models_info_path'] = p['base_path'] + models_dir + '/models_info.yml'
+
     p['obj_info_mpath'] = p['base_path'] + train_dir + '/{:02d}/info.yml'
     p['obj_gt_mpath'] = p['base_path'] + train_dir + '/{:02d}/gt.yml'
     p['obj_gt_stats_mpath'] = p['base_path'] + train_dir + '_gt_stats/{:02d}_delta={}.yml'
     p['train_rgb_mpath'] = p['base_path'] + train_dir + '/{:02d}/rgb/' + im_id_f + '.png'
     p['train_depth_mpath'] = p['base_path'] + train_dir + '/{:02d}/depth/' + im_id_f + '.png'
+    p['train_mask_mpath'] = p['base_path'] + train_dir + '/{:02d}/mask/' + im_id_f + '_{:02d}.png'
 
     p['scene_info_mpath'] = p['base_path'] + test_dir + '/{:02d}/info.yml'
     p['scene_gt_mpath'] = p['base_path'] + test_dir + '/{:02d}/gt.yml'
     p['scene_gt_stats_mpath'] = p['base_path'] + test_dir + '_gt_stats/{:02d}_delta={}.yml'
     p['test_rgb_mpath'] = p['base_path'] + test_dir + '/{:02d}/rgb/' + im_id_f + '.png'
     p['test_depth_mpath'] = p['base_path'] + test_dir + '/{:02d}/depth/' + im_id_f + '.png'
+    p['test_mask_mpath'] = p['base_path'] + test_dir + '/{:02d}/mask/' + im_id_f + '_{:02d}.png'
 
     p['cam'] = inout.load_cam_params(p['cam_params_path'])
 

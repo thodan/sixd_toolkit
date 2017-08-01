@@ -28,21 +28,21 @@ dp = get_dataset_params(dataset)
 
 if dataset_part == 'train':
     data_ids = range(1, dp['obj_count'] + 1)
-    gt_path_key = 'obj_gt_mpath'
-    gt_stats_path_key = 'obj_gt_stats_mpath'
+    gt_mpath_key = 'obj_gt_mpath'
+    gt_stats_mpath_key = 'obj_gt_stats_mpath'
 
 else: # 'test'
     data_ids = range(1, dp['scene_count'] + 1)
-    gt_path_key = 'scene_gt_mpath'
-    gt_stats_path_key = 'scene_gt_stats_mpath'
+    gt_mpath_key = 'scene_gt_mpath'
+    gt_stats_mpath_key = 'scene_gt_stats_mpath'
 
 # Load the GT statistics
 gt_stats = []
 for data_id in data_ids:
     print('Loading GT stats: {}, {}'.format(dataset, data_id))
-    gts = inout.load_gt(dp[gt_path_key].format(data_id))
+    gts = inout.load_gt(dp[gt_mpath_key].format(data_id))
     gt_stats_curr = inout.load_yaml(
-        dp[gt_stats_path_key].format(data_id, delta))
+        dp[gt_stats_mpath_key].format(data_id, delta))
     for im_id, gt_stats_im in gt_stats_curr.items():
         for gt_id, p in enumerate(gt_stats_im):
             p['data_id'] = data_id
