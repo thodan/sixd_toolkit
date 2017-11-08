@@ -7,7 +7,7 @@ import os
 import sys
 import yaml
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 gt_poses_1_path = '/local/datasets/tlod/hinterstoisser/backup/scene_02_separated_gts/scene_gt.yml'
 gt_poses_2_path = '/local/datasets/tlod/hinterstoisser/backup/scene_02_separated_gts/scene_gt_brachmann.yml'

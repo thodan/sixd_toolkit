@@ -60,6 +60,11 @@ def load_depth(path):
     im = np.vstack(itertools.imap(np.uint16, r.asDirect()[2])).astype(np.float32)
     return im
 
+def load_depth2(path):
+    d = scipy.misc.imread(path)
+    d = d.astype(np.float32)
+    return d
+
 def save_depth(path, im):
     # PyPNG library is used since it allows to save 16-bit PNG
     w_depth = png.Writer(im.shape[1], im.shape[0], greyscale=True, bitdepth=16)
@@ -124,9 +129,17 @@ def load_results_sixd17(path):
     """
     with open(path, 'r') as f:
         res = yaml.load(f, Loader=yaml.CLoader)
-        for est in res['ests']:
-            est['R'] = np.array(est['R']).reshape((3, 3))
-            est['t'] = np.array(est['t']).reshape((3, 1))
+        if not res['ests'] or res['ests'] == [{}]:
+            res['ests'] = []
+        else:
+            for est in res['ests']:
+                est['R'] = np.array(est['R']).reshape((3, 3))
+                est['t'] = np.array(est['t']).reshape((3, 1))
+                if isinstance(est['score'], basestring):
+                    if 'nan' in est['score']:
+                        est['score'] = 0.0
+                    else:
+                        raise ValueError('Bad type of score.')
     return res
 
 def save_results_sixd17(path, res, run_time=-1):

@@ -3,6 +3,7 @@
 
 import os
 import math
+import glob
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy.spatial import distance
@@ -67,21 +68,23 @@ def rgbd_to_point_cloud(K, depth, rgb=np.array([])):
     xs = ((us - K[0, 2]) * zs) / float(K[0, 0])
     ys = ((vs - K[1, 2]) * zs) / float(K[1, 1])
     pts = np.array([xs, ys, zs]).T
+    pts_im = np.vstack([us, vs]).T
     if rgb != np.array([]):
         colors = rgb[vs, us, :]
     else:
         colors = None
-    return pts, colors
+    return pts, colors, pts_im
 
 def clip_pt_to_im(pt, im_size):
     pt_c = [min(max(pt[0], 0), im_size[0] - 1),
             min(max(pt[1], 0), im_size[1] - 1)]
     return pt_c
 
-def calc_2d_bbox(xs, ys, im_size, clip=False):
+def calc_2d_bbox(xs, ys, im_size=None, clip=False):
     bb_tl = [xs.min(), ys.min()]
     bb_br = [xs.max(), ys.max()]
     if clip:
+        assert(im_size is not None)
         bb_tl = clip_pt_to_im(bb_tl, im_size)
         bb_br = clip_pt_to_im(bb_br, im_size)
     return [bb_tl[0], bb_tl[1], bb_br[0] - bb_tl[0], bb_br[1] - bb_tl[1]]
@@ -91,14 +94,47 @@ def calc_pose_2d_bbox(model, im_size, K, R_m2c, t_m2c):
     pts_im = np.round(pts_im).astype(np.int)
     return calc_2d_bbox(pts_im[:, 0], pts_im[:, 1], im_size)
 
+def get_bbox_corners(bb):
+    cors = np.array([
+        [bb[0], bb[1]],
+        [bb[0] + bb[2], bb[1]],
+        [bb[0] + bb[2], bb[1] + bb[3]],
+        [bb[0], bb[1] + bb[3]]
+    ])
+    return cors
+
 def crop_im(im, roi):
     if im.ndim == 3:
         crop = im[max(roi[1], 0):min(roi[1] + roi[3] + 1, im.shape[0]),
-                  max(roi[0], 0):min(roi[0] + roi[2] + 1, im.shape[1]), :]
+               max(roi[0], 0):min(roi[0] + roi[2] + 1, im.shape[1]), :]
     else:
         crop = im[max(roi[1], 0):min(roi[1] + roi[3] + 1, im.shape[0]),
-                  max(roi[0], 0):min(roi[0] + roi[2] + 1, im.shape[1])]
+               max(roi[0], 0):min(roi[0] + roi[2] + 1, im.shape[1])]
     return crop
+
+def paste_im(src, trg, pos):
+    """
+    Pastes src to trg with the top left corner at pos.
+    """
+    assert(src.ndim == trg.ndim)
+
+    # Size of the region to be pasted
+    w = min(src.shape[1], trg.shape[1] - pos[0])
+    h = min(src.shape[0], trg.shape[0] - pos[1])
+
+    if src.ndim == 3:
+        trg[pos[1]:(pos[1] + h), pos[0]:(pos[0] + w), :] = src[:h, :w, :]
+    else:
+        trg[pos[1]:(pos[1] + h), pos[0]:(pos[0] + w)] = src[:h, :w]
+
+def paste_im_mask(src, trg, pos, mask):
+    assert(src.ndim == trg.ndim)
+    assert(src.shape[:2] == mask.shape[:2])
+    src_pil = Image.fromarray(src)
+    trg_pil = Image.fromarray(trg)
+    mask_pil = Image.fromarray(mask.astype(np.uint8))
+    trg_pil.paste(src_pil, pos, mask_pil)
+    trg[:] = np.array(trg_pil)[:]
 
 def transform_pts_Rt(pts, R, t):
     """

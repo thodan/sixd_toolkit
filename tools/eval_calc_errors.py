@@ -6,25 +6,27 @@
 import os
 import sys
 import glob
-#import time
+# import time
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pysixd import inout, pose_error, misc
 from params.dataset_params import get_dataset_params
 
 # Results for which the errors will be calculated
 #-------------------------------------------------------------------------------
-result_base = '/home/tom/th_data/cmp/projects/sixd/sixd_results/'
+result_base = '/home/tom/th_data/cmp/projects/sixd/sixd_challenge_2017/results/'
 # result_base = '/datagrid/6DB/sixd_results/'
+
 result_paths = [
-    result_base + 'hodan-iros15-forwacv17_tless_primesense'
-    # result_base + 'hodan-iros15-nopso_hinterstoisser'
+    result_base + 'hodan-iros15_hinterstoisser',
+    # result_base + 'hodan-iros15_tless_primesense',
 ]
 
 # Other paths
 #-------------------------------------------------------------------------------
 # Mask of path to the output file with calculated errors
-errors_mpath = '{result_path}_eval/{error_sign}/errors_{scene_id:02d}.yml'
+errors_mpath = '{result_path}/../../eval/{result_name}/{error_sign}/' \
+               'errors_{scene_id:02d}.yml'
 
 # Parameters
 #-------------------------------------------------------------------------------
@@ -51,6 +53,7 @@ if error_type == 'vsd':
 for result_path in result_paths:
     print('Processing: ' + result_path)
 
+    result_name = os.path.basename(result_path)
     info = os.path.basename(result_path).split('_')
     method = info[0]
     dataset = info[1]
@@ -94,9 +97,9 @@ for result_path in result_paths:
         im_id = -1
         depth_im = None
         for res_id, res_path in enumerate(res_paths):
-            #t = time.time()
+            # t = time.time()
 
-            # Parse image ID and object ID from the file name
+            # Parse image ID and object ID from the filename
             filename = os.path.basename(res_path).split('.')[0]
             im_id_prev = im_id
             im_id, obj_id = map(int, filename.split('_'))
@@ -109,7 +112,8 @@ for result_path in result_paths:
             # Load depth image if VSD is selected
             if error_type == 'vsd' and im_id != im_id_prev:
                 depth_path = dp['test_depth_mpath'].format(scene_id, im_id)
-                depth_im = inout.load_depth(depth_path)
+                # depth_im = inout.load_depth(depth_path)
+                depth_im = inout.load_depth2(depth_path) # Faster
                 depth_im *= dp['cam']['depth_scale'] # to [mm]
 
             # Load camera matrix
@@ -173,12 +177,13 @@ for result_path in result_paths:
                     'score': est['score'],
                     'errors': errs_gts
                 })
-            #print('Evaluation time: {}s'.format(time.time() - t))
+            # print('Evaluation time: {}s'.format(time.time() - t))
 
         print('Saving errors...')
         errors_path = errors_mpath.format(result_path=result_path,
+                                          result_name=result_name,
                                           error_sign=error_sign,
-                                          scene_id = scene_id)
+                                          scene_id=scene_id)
 
         misc.ensure_dir(os.path.dirname(errors_path))
         inout.save_errors(errors_path, errs)

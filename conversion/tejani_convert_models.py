@@ -5,7 +5,7 @@ import os
 import sys
 import yaml
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pysixd import inout
 
 model_mpath = '/local/datasets/tlod/imperial/tejani/models/obj_{:02d}.ply'

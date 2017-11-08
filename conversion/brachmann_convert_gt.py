@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pysixd import inout, misc, transform, renderer
 import hinter_flip
 

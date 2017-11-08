@@ -7,7 +7,7 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pysixd import inout
 from params.dataset_params import get_dataset_params
 

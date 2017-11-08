@@ -211,12 +211,12 @@ def draw_color(shape, vertex_buffer, index_buffer, texture, mat_model, mat_view,
 
     program = gloo.Program(_color_vertex_code, color_fragment_code)
     program.bind(vertex_buffer)
-    program['u_light_eye_pos'] = [0, 0, 0]
+    program['u_light_eye_pos'] = [0, 0, 0] # Camera origin
     program['u_light_ambient_w'] = ambient_weight
     program['u_mv'] = _compute_model_view(mat_model, mat_view)
     program['u_nm'] = _compute_normal_matrix(mat_model, mat_view)
     program['u_mvp'] = _compute_model_view_proj(mat_model, mat_view, mat_proj)
-    if texture != None:
+    if texture is not None:
         program['u_use_texture'] = int(True)
         program['u_texture'] = texture
     else:
@@ -313,7 +313,7 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
     assert({'pts', 'faces'}.issubset(set(model.keys())))
 
     # Set texture / color of vertices
-    if texture != None:
+    if texture is not None:
         if texture.max() > 1.0:
             texture = texture.astype(np.float32) / 255.0
         texture = np.flipud(texture)

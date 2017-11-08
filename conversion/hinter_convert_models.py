@@ -6,7 +6,7 @@ import sys
 import math
 import yaml
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pysixd import inout, transform
 import hinter_flip
 

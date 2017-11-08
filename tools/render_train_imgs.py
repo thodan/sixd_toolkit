@@ -10,7 +10,7 @@ import numpy as np
 import cv2
 # import scipy.misc
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pysixd import view_sampler, inout, misc, renderer
 
 from params.dataset_params import get_dataset_params

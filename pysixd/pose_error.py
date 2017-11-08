@@ -7,9 +7,7 @@
 import math
 import numpy as np
 from scipy import spatial
-import renderer
-import misc
-import visibility
+from . import renderer, misc, visibility
 
 def vsd(R_est, t_est, R_gt, t_gt, model, depth_test, K, delta, tau,
         cost_type='tlinear'):

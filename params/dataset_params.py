@@ -1,24 +1,33 @@
 # Author: Tomas Hodan (hodantom@cmp.felk.cvut.cz)
 # Center for Machine Perception, Czech Technical University in Prague
 
-import os
-import sys
+import math
 
-sys.path.append(os.path.abspath('..'))
 from pysixd import inout
+from params import machine
 
-def get_dataset_params(name, model_type='', train_type='', test_type='', cam_type=''):
+def get_dataset_params(name, model_type='', train_type='', test_type='',
+                       cam_type=''):
 
     p = {'name': name, 'model_type': model_type,
          'train_type': train_type, 'test_type': test_type, 'cam_type': cam_type}
 
-    # Folder with datasets
-    common_base_path = '/local/datasets/sixd/'
-    # common_base_path = '/datagrid/personal/hodanto2/datasets/sixd/'
-
-    # Path to the T-LESS Toolkit (https://github.com/thodan/t-less_toolkit)
-    tless_tk_path = '/home/tom/th_data/cmp/projects/t-less/t-less_toolkit/'
-    # tless_tk_path = '/home.dokt/hodanto2/projects/t-less/t-less_toolkit/'
+    # Paths:
+    # common_base_path - folder with datasets
+    # tless_tk_path - path to the T-LESS Toolkit
+    #                 (https://github.com/thodan/t-less_toolkit)
+    if machine.name == 'lopata':
+        common_base_path = '/local/datasets/sixd/'
+        tless_tk_path = '/home/tom/th_data/cmp/projects/t-less/t-less_toolkit/'
+    elif machine.name == 'cmpgrid':
+        common_base_path = '/datagrid/personal/hodanto2/datasets/sixd/'
+        tless_tk_path = '/home.dokt/hodanto2/projects/t-less/t-less_toolkit/'
+    elif machine.name == 'tutgrid':
+        common_base_path = '/home/hodan/projects/datasets/sixd/'
+        tless_tk_path = '/hodan/projects/t-less/t-less_toolkit/'
+    else:
+        print('Error: Unknown machine!')
+        exit(-1)
 
     if name == 'hinterstoisser':
         p['obj_count'] = 15
@@ -29,6 +38,13 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
+
+        # p['test_obj_depth_range'] = (600.90, 1102.35) # [mm] - with original GT
+        p['test_obj_depth_range'] = (346.31, 1499.84) # [mm] - with extended GT
+        # (there are only 3 occurrences under 400 mm)
+
+        p['test_obj_azimuth_range'] = (0, 2 * math.pi)
+        p['test_obj_elev_range'] = (0, 0.5 * math.pi)
 
     elif name == 'tless':
         p['obj_count'] = 30
@@ -56,15 +72,48 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         elif p['train_type'] == 'render_reconst':
             p['train_im_size'] = (1280, 1024)
 
+        if p['test_type'] == 'primesense':
+            p['test_obj_depth_range'] = (649.89, 940.04) # [mm]
+            p['test_obj_azimuth_range'] = (0, 2 * math.pi)
+            p['test_obj_elev_range'] = (-0.5 * math.pi, 0.5 * math.pi)
+        if p['test_type'] == 'kinect':
+            # Not calculated yet
+            p['test_depth_range'] = None
+            p['test_obj_azimuth_range'] = None
+            p['test_obj_elev_range'] = None
+        elif p['test_type'] == 'canon':
+            # Not calculated yet
+            p['test_depth_range'] = None
+            p['test_obj_azimuth_range'] = None
+            p['test_obj_elev_range'] = None
+
     elif name == 'tudlight':
         p['obj_count'] = 3
         p['scene_count'] = 3
         p['train_im_size'] = (640, 480)
         p['test_im_size'] = (640, 480)
         p['base_path'] = common_base_path + 'tudlight/'
-        p['im_id_pad'] = 5
+        p['im_id_pad'] = 5 # 5
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
+
+        p['test_obj_depth_range'] = (851.29, 2016.14) # [mm]
+        p['test_obj_azimuth_range'] = (0, 2 * math.pi)
+        p['test_obj_elev_range'] = (-0.4363, 0.5 * math.pi) # (-25, 90) [deg]
+
+    elif name == 'toyotalight':
+        p['obj_count'] = 21
+        p['scene_count'] = 21
+        p['train_im_size'] = (640, 480)
+        p['test_im_size'] = (640, 480)
+        p['base_path'] = common_base_path + 'toyotalight/'
+        p['im_id_pad'] = 4 # 5
+        p['model_texture_mpath'] = None
+        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+
+        # p['test_obj_depth_range'] = None # [mm]
+        # p['test_obj_azimuth_range'] = None
+        # p['test_obj_elev_range'] = None # (-25, 90) [deg]
 
     elif name == 'rutgers':
         p['obj_count'] = 14
@@ -76,6 +125,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['model_texture_mpath'] = p['base_path'] + 'models/obj_{:02d}.png'
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
 
+        p['test_obj_depth_range'] = (594.41, 739.12) # [mm]
+        p['test_obj_azimuth_range'] = (0, 2 * math.pi)
+        p['test_obj_elev_range'] = (-0.5 * math.pi, 0.5 * math.pi)
+
     elif name == 'tejani':
         p['obj_count'] = 6
         p['scene_count'] = 6
@@ -86,6 +139,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
 
+        p['test_obj_depth_range'] = (509.12 - 1120.41) # [mm]
+        p['test_obj_azimuth_range'] = (0, 2 * math.pi)
+        p['test_obj_elev_range'] = (0, 0.5 * math.pi)
+
     elif name == 'doumanoglou':
         p['obj_count'] = 2
         p['scene_count'] = 3
@@ -95,6 +152,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
         p['cam_params_path'] = p['base_path'] + 'camera.yml'
+
+        p['test_obj_depth_range'] = (454.56 - 1076.29) # [mm]
+        p['test_obj_azimuth_range'] = (0, 2 * math.pi)
+        p['test_obj_elev_range'] = (-1.0297, 0.5 * math.pi) # (-59, 90) [deg]
 
     else:
         print('Error: Unknown SIXD dataset.')
@@ -117,6 +178,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
     p['train_rgb_mpath'] = p['base_path'] + train_dir + '/{:02d}/rgb/' + im_id_f + '.png'
     p['train_depth_mpath'] = p['base_path'] + train_dir + '/{:02d}/depth/' + im_id_f + '.png'
     p['train_mask_mpath'] = p['base_path'] + train_dir + '/{:02d}/mask/' + im_id_f + '_{:02d}.png'
+    p['train_mask_visib_mpath'] = p['base_path'] + train_dir + '/{:02d}/mask_visib/' + im_id_f + '_{:02d}.png'
 
     p['scene_info_mpath'] = p['base_path'] + test_dir + '/{:02d}/info.yml'
     p['scene_gt_mpath'] = p['base_path'] + test_dir + '/{:02d}/gt.yml'
@@ -124,6 +186,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='', cam_typ
     p['test_rgb_mpath'] = p['base_path'] + test_dir + '/{:02d}/rgb/' + im_id_f + '.png'
     p['test_depth_mpath'] = p['base_path'] + test_dir + '/{:02d}/depth/' + im_id_f + '.png'
     p['test_mask_mpath'] = p['base_path'] + test_dir + '/{:02d}/mask/' + im_id_f + '_{:02d}.png'
+    p['test_mask_visib_mpath'] = p['base_path'] + test_dir + '/{:02d}/mask_visib/' + im_id_f + '_{:02d}.png'
 
     p['cam'] = inout.load_cam_params(p['cam_params_path'])
 

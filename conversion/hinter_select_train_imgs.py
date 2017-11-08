@@ -8,7 +8,7 @@ import sys
 import shutil
 import yaml
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pysixd import misc
 
 obj_ids = range(1, 16)
