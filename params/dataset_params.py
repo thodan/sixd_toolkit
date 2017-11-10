@@ -4,7 +4,6 @@
 import math
 
 from pysixd import inout
-from params import machine
 
 def get_dataset_params(name, model_type='', train_type='', test_type='',
                        cam_type=''):
@@ -12,22 +11,11 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
     p = {'name': name, 'model_type': model_type,
          'train_type': train_type, 'test_type': test_type, 'cam_type': cam_type}
 
-    # Paths:
-    # common_base_path - folder with datasets
-    # tless_tk_path - path to the T-LESS Toolkit
-    #                 (https://github.com/thodan/t-less_toolkit)
-    if machine.name == 'lopata':
-        common_base_path = '/local/datasets/sixd/'
-        tless_tk_path = '/home/tom/th_data/cmp/projects/t-less/t-less_toolkit/'
-    elif machine.name == 'cmpgrid':
-        common_base_path = '/datagrid/personal/hodanto2/datasets/sixd/'
-        tless_tk_path = '/home.dokt/hodanto2/projects/t-less/t-less_toolkit/'
-    elif machine.name == 'tutgrid':
-        common_base_path = '/home/hodan/projects/datasets/sixd/'
-        tless_tk_path = '/hodan/projects/t-less/t-less_toolkit/'
-    else:
-        print('Error: Unknown machine!')
-        exit(-1)
+    # Path to the folder with datasets
+    common_base_path = ''
+
+    # Path to the T-LESS Toolkit (https://github.com/thodan/t-less_toolkit)
+    tless_tk_path = ''
 
     if name == 'hinterstoisser':
         p['obj_count'] = 15
