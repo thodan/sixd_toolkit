@@ -4,7 +4,7 @@
 # Calculates performance scores for the 6D localization task.
 
 # For evaluation of the SIXD Challenge 2017 task (6D localization of a single
-# instance of a single object), use this setting (TENTATIVE):
+# instance of a single object), use these parameters:
 # n_top = 1
 # visib_gt_min = 0.1
 # error_type = 'vsd'
@@ -14,6 +14,7 @@
 # error_thresh['vsd'] = 0.3
 
 import os
+from os.path import join as pjoin
 import sys
 from collections import defaultdict
 import numpy as np
@@ -174,12 +175,10 @@ def calc_scores(scene_ids, obj_ids, matches, n_top, do_print=True):
 def main():
     # Paths to pose errors (calculated using eval_calc_errors.py)
     #---------------------------------------------------------------------------
-    error_bpath = '/home/tom/th_data/cmp/projects/sixd/sixd_challenge_2017/eval/'
-    # error_bpath = '/datagrid/6DB/sixd_results/'
-
+    error_bpath = '/path/to/eval/'
     error_paths = [
-        error_bpath + 'hodan-iros15_hinterstoisser',
-        # error_bpath + 'hodan-iros15_tless_primesense',
+        pjoin(error_bpath, 'hodan-iros15_hinterstoisser'),
+        # pjoin(error_bpath, 'hodan-iros15_tless_primesense'),
     ]
 
     error_dir = 'error=vsd_ntop=1_delta=15_tau=20_cost=step'
@@ -189,14 +188,15 @@ def main():
     # Other paths
     #---------------------------------------------------------------------------
     # Mask of path to the input file with calculated errors
-    errors_mpath = '{error_path}/errors_{scene_id:02d}.yml'
+    errors_mpath = pjoin('{error_path}', 'errors_{scene_id:02d}.yml')
 
     # Mask of path to the output file with established matches and calculated scores
-    matches_mpath = '{error_path}/matches_{eval_sign}.yml'
-    scores_mpath = '{error_path}/scores_{eval_sign}.yml'
+    matches_mpath = pjoin('{error_path}', 'matches_{eval_sign}.yml')
+    scores_mpath = pjoin('{error_path}', 'scores_{eval_sign}.yml')
 
     # Parameters
     #---------------------------------------------------------------------------
+    require_all_errors = True # Whether to break if some errors are missing
     visib_gt_min = 0.1 # Minimum visible surface fraction of valid GT pose
     visib_delta = 15 # [mm]
 
@@ -270,10 +270,18 @@ def main():
             # Load pre-calculated errors of the pose estimates
             scene_errs_path = errors_mpath.format(
                 error_path=error_path, scene_id=scene_id)
-            errs = inout.load_errors(scene_errs_path)
 
-            matches += match_poses(gts, gt_stats, errs, scene_id, visib_gt_min,
-                                   error_threshs, n_top)
+            if os.path.isfile(scene_errs_path):
+                errs = inout.load_errors(scene_errs_path)
+
+                matches += match_poses(gts, gt_stats, errs, scene_id,
+                                       visib_gt_min, error_threshs, n_top)
+
+            elif require_all_errors:
+                raise IOError(
+                    '{} is missing, but errors for all scenes are required'
+                    ' (require_all_results = True).'.format(scene_errs_path)
+                )
 
         # Calculate the performance scores
         #-----------------------------------------------------------------------

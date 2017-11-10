@@ -2,6 +2,7 @@
 # Center for Machine Perception, Czech Technical University in Prague
 
 import math
+from os.path import join as pjoin
 
 from pysixd import inout
 
@@ -12,20 +13,20 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
          'train_type': train_type, 'test_type': test_type, 'cam_type': cam_type}
 
     # Path to the folder with datasets
-    common_base_path = ''
+    common_base_path = '/path/to/datasets/'
 
     # Path to the T-LESS Toolkit (https://github.com/thodan/t-less_toolkit)
-    tless_tk_path = ''
+    tless_tk_path = '/path/to/t-less_toolkit/'
 
     if name == 'hinterstoisser':
         p['obj_count'] = 15
         p['scene_count'] = 15
         p['train_im_size'] = (640, 480)
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'hinterstoisser/'
+        p['base_path'] = pjoin(common_base_path, 'hinterstoisser')
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+        p['cam_params_path'] = pjoin(p['base_path'], 'camera.yml')
 
         # p['test_obj_depth_range'] = (600.90, 1102.35) # [mm] - with original GT
         p['test_obj_depth_range'] = (346.31, 1499.84) # [mm] - with extended GT
@@ -38,7 +39,7 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
         p['obj_count'] = 30
         p['scene_count'] = 20
 
-        p['base_path'] = common_base_path + 't-less/t-less_v2/'
+        p['base_path'] = pjoin(common_base_path, 't-less', 't-less_v2')
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
 
@@ -47,7 +48,8 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
         if p['test_type'] == '': p['test_type'] = 'primesense'
         if p['cam_type'] == '': p['cam_type'] = 'primesense'
 
-        p['cam_params_path'] = tless_tk_path + 'cam/camera_' + p['cam_type'] + '.yml'
+        p['cam_params_path'] = pjoin(tless_tk_path, 'cam',
+                                     'camera_' + p['cam_type'] + '.yml')
         if p['test_type'] in ['primesense', 'kinect']:
             p['test_im_size'] = (720, 540)
         elif p['test_type'] == 'canon':
@@ -80,10 +82,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
         p['scene_count'] = 3
         p['train_im_size'] = (640, 480)
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'tudlight/'
+        p['base_path'] = pjoin(common_base_path, 'tudlight')
         p['im_id_pad'] = 5 # 5
         p['model_texture_mpath'] = None
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+        p['cam_params_path'] = pjoin(p['base_path'], 'camera.yml')
 
         p['test_obj_depth_range'] = (851.29, 2016.14) # [mm]
         p['test_obj_azimuth_range'] = (0, 2 * math.pi)
@@ -94,10 +96,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
         p['scene_count'] = 21
         p['train_im_size'] = (640, 480)
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'toyotalight/'
+        p['base_path'] = pjoin(common_base_path, 'toyotalight')
         p['im_id_pad'] = 4 # 5
         p['model_texture_mpath'] = None
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+        p['cam_params_path'] = pjoin(p['base_path'], 'camera.yml')
 
         # p['test_obj_depth_range'] = None # [mm]
         # p['test_obj_azimuth_range'] = None
@@ -108,10 +110,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
         p['scene_count'] = 14
         p['train_im_size'] = (640, 480)
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'rutgers/'
+        p['base_path'] = pjoin(common_base_path, 'rutgers')
         p['im_id_pad'] = 4
-        p['model_texture_mpath'] = p['base_path'] + 'models/obj_{:02d}.png'
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+        p['model_texture_mpath'] = pjoin(p['base_path'], 'models', 'obj_{:02d}.png')
+        p['cam_params_path'] = pjoin(p['base_path'], 'camera.yml')
 
         p['test_obj_depth_range'] = (594.41, 739.12) # [mm]
         p['test_obj_azimuth_range'] = (0, 2 * math.pi)
@@ -122,10 +124,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
         p['scene_count'] = 6
         p['train_im_size'] = (640, 480)
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'tejani/'
+        p['base_path'] = pjoin(common_base_path, 'tejani')
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+        p['cam_params_path'] = pjoin(p['base_path'], 'camera.yml')
 
         p['test_obj_depth_range'] = (509.12 - 1120.41) # [mm]
         p['test_obj_azimuth_range'] = (0, 2 * math.pi)
@@ -136,10 +138,10 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
         p['scene_count'] = 3
         p['train_im_size'] = (640, 480)
         p['test_im_size'] = (640, 480)
-        p['base_path'] = common_base_path + 'doumanoglou/'
+        p['base_path'] = pjoin(common_base_path, 'doumanoglou')
         p['im_id_pad'] = 4
         p['model_texture_mpath'] = None
-        p['cam_params_path'] = p['base_path'] + 'camera.yml'
+        p['cam_params_path'] = pjoin(p['base_path'], 'camera.yml')
 
         p['test_obj_depth_range'] = (454.56 - 1076.29) # [mm]
         p['test_obj_azimuth_range'] = (0, 2 * math.pi)
@@ -157,24 +159,24 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
     im_id_f = '{:' + str(p['im_id_pad']).zfill(2) + 'd}'
 
     # Paths and path masks
-    p['model_mpath'] = p['base_path'] + models_dir + '/obj_{:02d}.ply'
-    p['models_info_path'] = p['base_path'] + models_dir + '/models_info.yml'
+    p['model_mpath'] = pjoin(p['base_path'], models_dir, 'obj_{:02d}.ply')
+    p['models_info_path'] = pjoin(p['base_path'], models_dir, 'models_info.yml')
 
-    p['obj_info_mpath'] = p['base_path'] + train_dir + '/{:02d}/info.yml'
-    p['obj_gt_mpath'] = p['base_path'] + train_dir + '/{:02d}/gt.yml'
-    p['obj_gt_stats_mpath'] = p['base_path'] + train_dir + '_gt_stats/{:02d}_delta={}.yml'
-    p['train_rgb_mpath'] = p['base_path'] + train_dir + '/{:02d}/rgb/' + im_id_f + '.png'
-    p['train_depth_mpath'] = p['base_path'] + train_dir + '/{:02d}/depth/' + im_id_f + '.png'
-    p['train_mask_mpath'] = p['base_path'] + train_dir + '/{:02d}/mask/' + im_id_f + '_{:02d}.png'
-    p['train_mask_visib_mpath'] = p['base_path'] + train_dir + '/{:02d}/mask_visib/' + im_id_f + '_{:02d}.png'
+    p['obj_info_mpath'] = pjoin(p['base_path'], train_dir, '{:02d}', 'info.yml')
+    p['obj_gt_mpath'] = pjoin(p['base_path'], train_dir, '{:02d}', 'gt.yml')
+    p['obj_gt_stats_mpath'] = pjoin(p['base_path'], train_dir + '_gt_stats', '{:02d}_delta={}.yml')
+    p['train_rgb_mpath'] = pjoin(p['base_path'], train_dir, '{:02d}', 'rgb', im_id_f + '.png')
+    p['train_depth_mpath'] = pjoin(p['base_path'], train_dir, '{:02d}', 'depth', im_id_f + '.png')
+    p['train_mask_mpath'] = pjoin(p['base_path'], train_dir, '{:02d}', 'mask', im_id_f + '_{:02d}.png')
+    p['train_mask_visib_mpath'] = pjoin(p['base_path'], train_dir, '{:02d}', 'mask_visib', im_id_f + '_{:02d}.png')
 
-    p['scene_info_mpath'] = p['base_path'] + test_dir + '/{:02d}/info.yml'
-    p['scene_gt_mpath'] = p['base_path'] + test_dir + '/{:02d}/gt.yml'
-    p['scene_gt_stats_mpath'] = p['base_path'] + test_dir + '_gt_stats/{:02d}_delta={}.yml'
-    p['test_rgb_mpath'] = p['base_path'] + test_dir + '/{:02d}/rgb/' + im_id_f + '.png'
-    p['test_depth_mpath'] = p['base_path'] + test_dir + '/{:02d}/depth/' + im_id_f + '.png'
-    p['test_mask_mpath'] = p['base_path'] + test_dir + '/{:02d}/mask/' + im_id_f + '_{:02d}.png'
-    p['test_mask_visib_mpath'] = p['base_path'] + test_dir + '/{:02d}/mask_visib/' + im_id_f + '_{:02d}.png'
+    p['scene_info_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'info.yml')
+    p['scene_gt_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'gt.yml')
+    p['scene_gt_stats_mpath'] = pjoin(p['base_path'], test_dir + '_gt_stats', '{:02d}_delta={}.yml')
+    p['test_rgb_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'rgb', im_id_f + '.png')
+    p['test_depth_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'depth', im_id_f + '.png')
+    p['test_mask_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'mask', im_id_f + '_{:02d}.png')
+    p['test_mask_visib_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'mask_visib', im_id_f + '_{:02d}.png')
 
     p['cam'] = inout.load_cam_params(p['cam_params_path'])
 

@@ -41,10 +41,13 @@ To use a different backend library, see the first lines of
 
 1. Run your method on the SIXD datasets and prepare the results in
 [this format](https://github.com/thodan/sixd_toolkit/blob/master/doc/sixd_2017_results_format.md).
-2. Run **tools/eval_calc_errors.py** to calculate errors of the pose estimates
-(fill list **result_paths** in the script with paths to the results first).
-3. Run **tools/eval_loc.py** to calculate performance scores in the
-6D localization task (fill list **error_paths** in the script with paths to the
+2. In **params/dataset_params.py** set **common_base_path** to the path of the
+SIXD datasets. For T-LESS, you will also need to set **tless_tk_path** to the
+path of the [T-LESS Toolkit](https://github.com/thodan/t-less_toolkit).
+3. Run **tools/eval_calc_errors.py** to calculate errors of the pose estimates
+(fill list **result_paths** with paths to the results first).
+4. Run **tools/eval_loc.py** to calculate performance scores in the
+6D localization task (fill list **error_paths** with paths to the
 calculated errors first).
 
 - [Measuring error of 6D object pose](https://github.com/thodan/sixd_toolkit/blob/master/doc/sixd_2017_measuring_error.pdf)

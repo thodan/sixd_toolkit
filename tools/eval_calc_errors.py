@@ -4,6 +4,7 @@
 # Calculates error of 6D object pose estimates.
 
 import os
+from os.path import join as pjoin
 import sys
 import glob
 # import time
@@ -14,19 +15,17 @@ from params.dataset_params import get_dataset_params
 
 # Results for which the errors will be calculated
 #-------------------------------------------------------------------------------
-result_base = '/home/tom/th_data/cmp/projects/sixd/sixd_challenge_2017/results/'
-# result_base = '/datagrid/6DB/sixd_results/'
-
+result_base = '/path/to/results/'
 result_paths = [
-    result_base + 'hodan-iros15_hinterstoisser',
-    # result_base + 'hodan-iros15_tless_primesense',
+    pjoin(result_base, 'hodan-iros15_hinterstoisser'),
+    # pjoin(result_base, 'hodan-iros15_tless_primesense'),
 ]
 
 # Other paths
 #-------------------------------------------------------------------------------
 # Mask of path to the output file with calculated errors
-errors_mpath = '{result_path}/../../eval/{result_name}/{error_sign}/' \
-               'errors_{scene_id:02d}.yml'
+errors_mpath = pjoin('{result_path}', '..', '..', 'eval', '{result_name}',
+                     '{error_sign}', 'errors_{scene_id:02d}.yml')
 
 # Parameters
 #-------------------------------------------------------------------------------
@@ -105,9 +104,11 @@ for result_path in result_paths:
             im_id, obj_id = map(int, filename.split('_'))
 
             if res_id % 10 == 0:
-                print('Calculating error: {}, {}, {}, {}, {}, {}, {}'.format(
-                    error_type, method, dataset, test_type, scene_id,
-                    im_id, obj_id))
+                dataset_str = dataset
+                if test_type != '':
+                    dataset_str += ' - {}'.format(test_type)
+                print('Calculating error: {}, {}, {}, {}, {}, {}'.format(
+                    error_type, method, dataset_str, scene_id, im_id, obj_id))
 
             # Load depth image if VSD is selected
             if error_type == 'vsd' and im_id != im_id_prev:
