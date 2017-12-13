@@ -6,7 +6,7 @@
 The datasets have the following structure:
 
 * **dataset_info.md** - Dataset-specific information.
-* **camera.yml** - Camera parameters.
+* **camera.yml** - Camera parameters (only for simulation, see below).
 * **models[\_MODELTYPE]** - 3D object models.
 * **train[\_TRAINTYPE]/YY/{rgb,depth,obj,seg}** - Training images of object YY.
 * **test[\_TESTTYPE]/ZZ/{rgb,depth,mask}** - Test images of scene ZZ.
@@ -18,7 +18,7 @@ data types are available.
 The images are organized into subfolders:
 
 * **rgb** - Color images.
-* **depth** - Depth images (saved as 16-bit unsigned short, see camera.yml for
+* **depth** - Depth images (saved as 16-bit unsigned short, see info.yml for
     the depth units).
 * **obj** (optional) - Object coordinate images [4].
 * **seg** (optional) - Segmentation masks of the objects (for training images).
@@ -37,11 +37,13 @@ contains for each image the following information:
 * **cam\_K** - 3x3 intrinsic camera matrix K (saved row-wise).
 * **cam\_R\_w2c** (optional) - 3x3 rotation matrix R\_w2c (saved row-wise).
 * **cam\_t\_w2c** (optional) - 3x1 translation vector t\_w2c.
+* **depth_scale** (optional) - Multiply the depth images with this factor to get
+    depth in mm.
 * **view\_level** (optional) - Viewpoint subdivision level, see below.
 
 The matrix K may be different for each image. For example, in the case of the
 T-LESS dataset, the principal point is not constant because the provided images
-were obtained by cropping a region around the origin of the world coordinate
+were obtained by cropping the region around the origin of the world coordinate
 system (i.e. the center of the turntable) in the captured images.
 
 P\_w2i = K * [R\_w2c, t\_w2c] is the camera matrix which transforms 3D point
@@ -122,7 +124,7 @@ distortion, requiring no further action from the dataset user.
 
 ## Units
 
-* Depth images: See camera.yml.
+* Depth images: See info.yml.
 * 3D object models: 1 mm
 * Translation vectors: 1 mm
 
