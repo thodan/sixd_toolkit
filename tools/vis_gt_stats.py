@@ -17,10 +17,12 @@ dataset = 'tless'
 # dataset = 'rutgers'
 # dataset = 'tejani'
 # dataset = 'doumanoglou'
+# dataset = 'toyotalight'
 
 dataset_part = 'train'
 # dataset_part = 'test'
 
+use_image_subset = True # Whether to use only the specified subset of images
 delta = 15 # Tolerance used in the visibility test [mm]
 
 # Load dataset parameters
@@ -36,6 +38,12 @@ else: # 'test'
     gt_mpath_key = 'scene_gt_mpath'
     gt_stats_mpath_key = 'scene_gt_stats_mpath'
 
+# Subset of images to be considered
+if dataset_part == 'test' and use_image_subset:
+    im_ids_sets = inout.load_yaml(dp['test_set_fpath'])
+else:
+    im_ids_sets = None
+
 # Load the GT statistics
 gt_stats = []
 for data_id in data_ids:
@@ -43,7 +51,15 @@ for data_id in data_ids:
     gts = inout.load_gt(dp[gt_mpath_key].format(data_id))
     gt_stats_curr = inout.load_yaml(
         dp[gt_stats_mpath_key].format(data_id, delta))
-    for im_id, gt_stats_im in gt_stats_curr.items():
+
+    # Considered subset of images for the current scene
+    if im_ids_sets is not None:
+        im_ids_curr = im_ids_sets[data_id]
+    else:
+        im_ids_curr = sorted(gt_stats_curr.keys())
+
+    for im_id in im_ids_curr:
+        gt_stats_im = gt_stats_curr[im_id]
         for gt_id, p in enumerate(gt_stats_im):
             p['data_id'] = data_id
             p['im_id'] = im_id

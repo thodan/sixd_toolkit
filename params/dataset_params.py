@@ -178,6 +178,8 @@ def get_dataset_params(name, model_type='', train_type='', test_type='',
     p['test_mask_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'mask', im_id_f + '_{:02d}.png')
     p['test_mask_visib_mpath'] = pjoin(p['base_path'], test_dir, '{:02d}', 'mask_visib', im_id_f + '_{:02d}.png')
 
+    p['test_set_fpath'] = pjoin(p['base_path'], 'test_set_v1.yml')
+
     p['cam'] = inout.load_cam_params(p['cam_params_path'])
 
     return p

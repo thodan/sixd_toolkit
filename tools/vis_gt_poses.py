@@ -52,6 +52,15 @@ colors = inout.load_yaml('../data/colors.yml')
 vis_rgb_mpath = '../output/vis_gt_poses_{}/{:02d}/{:04d}.jpg'
 vis_depth_mpath = '../output/vis_gt_poses_{}/{:02d}/{:04d}_depth_diff.jpg'
 
+# Whether to consider only the specified subset of images
+use_image_subset = True
+
+# Subset of images to be considered
+if use_image_subset:
+    im_ids_sets = inout.load_yaml(dp['test_set_fpath'])
+else:
+    im_ids_sets = None
+
 scene_ids_curr = range(1, dp['scene_count'] + 1)
 if scene_ids:
     scene_ids_curr = set(scene_ids_curr).intersection(scene_ids)
@@ -68,10 +77,16 @@ for scene_id in scene_ids_curr:
     for obj_id in obj_ids:
         models[obj_id] = inout.load_ply(dp['model_mpath'].format(obj_id))
 
-    # Visualize GT poses in the selected images
-    im_ids_curr = sorted(scene_info.keys())
+    # Considered subset of images for the current scene
+    if im_ids_sets is not None:
+        im_ids_curr = im_ids_sets[scene_id]
+    else:
+        im_ids_curr = sorted(scene_info.keys())
+
     if im_ids:
         im_ids_curr = set(im_ids_curr).intersection(im_ids)
+
+    # Visualize GT poses in the selected images
     for im_id in im_ids_curr:
         print('scene: {}, im: {}'.format(scene_id, im_id))
 

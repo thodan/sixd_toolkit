@@ -21,6 +21,7 @@ dataset = 'tless'
 # dataset = 'rutgers'
 # dataset = 'tejani'
 # dataset = 'doumanoglou'
+# dataset = 'toyotalight'
 
 model_type = ''
 cam_type = ''

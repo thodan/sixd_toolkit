@@ -3,7 +3,6 @@
 
 import os
 import math
-import glob
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy.spatial import distance
@@ -93,15 +92,6 @@ def calc_pose_2d_bbox(model, im_size, K, R_m2c, t_m2c):
     pts_im = project_pts(model['pts'], K, R_m2c, t_m2c)
     pts_im = np.round(pts_im).astype(np.int)
     return calc_2d_bbox(pts_im[:, 0], pts_im[:, 1], im_size)
-
-def get_bbox_corners(bb):
-    cors = np.array([
-        [bb[0], bb[1]],
-        [bb[0] + bb[2], bb[1]],
-        [bb[0] + bb[2], bb[1] + bb[3]],
-        [bb[0], bb[1] + bb[3]]
-    ])
-    return cors
 
 def crop_im(im, roi):
     if im.ndim == 3:

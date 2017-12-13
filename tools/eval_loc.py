@@ -196,6 +196,7 @@ def main():
 
     # Parameters
     #---------------------------------------------------------------------------
+    use_image_subset = True  # Whether to use the specified subset of images
     require_all_errors = True # Whether to break if some errors are missing
     visib_gt_min = 0.1 # Minimum visible surface fraction of valid GT pose
     visib_delta = 15 # [mm]
@@ -241,14 +242,22 @@ def main():
         obj_ids = range(1, dp['obj_count'] + 1)
         scene_ids = range(1, dp['scene_count'] + 1)
 
+        # Subset of images to be considered
+        if use_image_subset:
+            im_ids_sets = inout.load_yaml(dp['test_set_fpath'])
+        else:
+            im_ids_sets = None
+
         # Set threshold of correctness (might be different for each object)
         error_threshs = {}
         if error_type in ['add', 'adi']:
+
             # Relative to object diameter
             models_info = inout.load_yaml(dp['models_info_path'])
             for obj_id in obj_ids:
                 obj_diameter = models_info[obj_id]['diameter']
-                error_threshs[obj_id] = error_thresh_fact[error_type] * obj_diameter
+                error_threshs[obj_id] = error_thresh_fact[error_type] *\
+                                        obj_diameter
         else:
             # The same threshold for all objects
             for obj_id in obj_ids:
@@ -266,6 +275,12 @@ def main():
             gt_stats_path = dp['scene_gt_stats_mpath'].format(scene_id,
                                                               visib_delta)
             gt_stats = inout.load_yaml(gt_stats_path)
+
+            # Keep the GT poses and their stats only for the selected images
+            if im_ids_sets is not None:
+                im_ids = im_ids_sets[scene_id]
+                gts = {im_id: gts[im_id] for im_id in im_ids}
+                gt_stats = {im_id: gt_stats[im_id] for im_id in im_ids}
 
             # Load pre-calculated errors of the pose estimates
             scene_errs_path = errors_mpath.format(

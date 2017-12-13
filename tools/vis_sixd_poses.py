@@ -4,9 +4,9 @@
 # Visualizes 6D object pose estimates from files in the SIXD format.
 
 import os
+from os.path import join as pjoin
 import sys
 import glob
-#import time
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -16,12 +16,11 @@ from pysixd import inout, misc, renderer
 from params.dataset_params import get_dataset_params
 
 #-------------------------------------------------------------------------------
-result_base = '/home/tom/th_data/cmp/projects/sixd/sixd_challenge_2017/results/'
-# result_base = '/datagrid/6DB/sixd_results/'
+result_base = '/path/to/results/'
 
 result_paths = [
-    result_base + 'hodan-iros15_hinterstoisser',
-    # result_base + 'hodan-iros15_tless_primesense',
+    pjoin(result_base, 'hodan-iros15_hinterstoisser'),
+    # pjoin(result_base, 'hodan-iros15_tless_primesense'),
 ]
 
 # Other paths
@@ -104,7 +103,6 @@ for result_path in result_paths:
         im_id = -1
         depth_im = None
         for res_id, res_path in enumerate(res_paths):
-            #t = time.time()
 
             # Parse image ID and object ID from the file name
             filename = os.path.basename(res_path).split('.')[0]
@@ -251,8 +249,6 @@ for result_path in result_paths:
                     misc.ensure_dir(os.path.dirname(vis_depth_path))
                 plt.savefig(vis_depth_path, pad=0, bbox_inches='tight')
                 plt.close()
-
-            #print('Processing time: {}s'.format(time.time() - t))
 
     print('')
 print('Done.')

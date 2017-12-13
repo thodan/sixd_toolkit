@@ -18,10 +18,12 @@ dataset = 'tless'
 # dataset = 'rutgers'
 # dataset = 'tejani'
 # dataset = 'doumanoglou'
+# dataset = 'toyotalight'
 
 dataset_part = 'train'
 # dataset_part = 'test'
 
+use_image_subset = True # Whether to use only the specified subset of images
 delta = 15 # Tolerance used in the visibility test [mm]
 do_vis = True # Whether to save visualizations of visibility masks
 
@@ -39,6 +41,12 @@ else:
 dp = get_dataset_params(dataset, model_type=model_type, train_type=data_type,
                         test_type=data_type, cam_type=cam_type)
 obj_ids = range(1, dp['obj_count'] + 1)
+
+# Subset of images to be considered
+if data_type == 'test' and use_image_subset:
+    im_ids_sets = inout.load_yaml(dp['test_set_fpath'])
+else:
+    im_ids_sets = None
 
 if dataset_part == 'train':
     data_ids = range(1, dp['obj_count'] + 1)
@@ -75,7 +83,12 @@ for data_id in data_ids:
     info = inout.load_info(dp[info_mpath_key].format(data_id))
     gts = inout.load_gt(dp[gt_mpath_key].format(data_id))
 
-    im_ids = sorted(gts.keys())
+    # Considered subset of images for the current scene
+    if im_ids_sets is not None:
+        im_ids = im_ids_sets[data_id]
+    else:
+        im_ids = sorted(gts.keys())
+
     gt_stats = {}
     for im_id in im_ids:
         print('dataset: {}, scene/obj: {}, im: {}'.format(dataset, data_id, im_id))
