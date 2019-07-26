@@ -1,3 +1,5 @@
+## This repository is no longer maintained. Please use the [BOP Toolkit](https://github.com/thodan/bop_toolkit) instead.
+
 # SIXD Toolkit
 
 Python scripts to facilitate participation in the SIXD Challenge:
